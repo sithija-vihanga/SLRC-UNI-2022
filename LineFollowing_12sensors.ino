@@ -97,8 +97,39 @@ int d_error = 0;
 int  i_error = 0;
 
 void loop(){ 
-
+     pidLineFollower();
   
+}
+
+void turnLeft(){
+  analogWrite(enA, 150);
+  analogWrite(enB, 150);
+  digitalWrite(in1, HIGH);
+  digitalWrite(in2, LOW) ;
+  digitalWrite(in3, LOW);
+  digitalWrite(in4, HIGH) ;  
+}
+
+void turnRight(){
+  analogWrite(enA, 150);
+  analogWrite(enB, 150);
+   digitalWrite(in1, LOW);
+  digitalWrite(in2, HIGH) ;
+  digitalWrite(in3, HIGH);
+  digitalWrite(in4, LOW) ;  
+}
+
+void forward(int lSpeed,int rSpeed){
+  analogWrite(enA, lSpeed);
+  analogWrite(enB, rSpeed);
+  digitalWrite(in1, HIGH);
+  digitalWrite(in2, LOW) ;
+  digitalWrite(in3, HIGH);
+  digitalWrite(in4, LOW) ;
+}
+
+void pidLineFollower(){
+      
   inputVal[0]  = analogRead(ProxSensor_1);
   inputVal[1]  = analogRead(ProxSensor_2);
   inputVal[2]  = analogRead(ProxSensor_3);
@@ -211,29 +242,3 @@ int base_speed = 80;
 
 }
 
-void forward(int lSpeed,int rSpeed){
-  analogWrite(enA, lSpeed);
-  analogWrite(enB, rSpeed);
-  digitalWrite(in1, HIGH);
-  digitalWrite(in2, LOW) ;
-  digitalWrite(in3, HIGH);
-  digitalWrite(in4, LOW) ;
-}
-
-void turnLeft(){
-  analogWrite(enA, 150);
-  analogWrite(enB, 150);
-  digitalWrite(in1, HIGH);
-  digitalWrite(in2, LOW) ;
-  digitalWrite(in3, LOW);
-  digitalWrite(in4, HIGH) ;  
-}
-
-void turnRight(){
-  analogWrite(enA, 150);
-  analogWrite(enB, 150);
-   digitalWrite(in1, LOW);
-  digitalWrite(in2, HIGH) ;
-  digitalWrite(in3, HIGH);
-  digitalWrite(in4, LOW) ;  
-}
