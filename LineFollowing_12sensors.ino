@@ -4,9 +4,35 @@
 
 #define SCREEN_WIDTH 128 // OLED display width,  in pixels
 #define SCREEN_HEIGHT 64 // OLED display height, in pixels
+#define NUM_SENSORS 12   //For floor pattern
+#define NUM_VALUES 6   //for floor pattern
+
 
 // declare an SSD1306 display object connected to I2C
 Adafruit_SSD1306 oled(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, -1);
+
+//////////////////////// floorPattern //////////////////////////////////
+  int floorCounter = 0; 
+  String junctionType = "None";
+  bool junctionDetected = false; 
+  String linePathPattern = "None"; 
+  bool pathCrossing = false;
+  int sensorValues[NUM_SENSORS][NUM_VALUES];  // For 12 line sensors to store 10 previous values
+  int lineSensorCount[3] = {0, 0, 0} ;
+///////////////////////////////////////////////////////////////////////
+
+////////////////////////////// Tower of hanoi ///////////////////////////////////////////
+  //Junction mapping
+  int thJunc[3][5] = {{ 48,  8,  3,  100 },
+                      { 32,  4,  2,  12  },
+                      { 16,  0,  1,  8   }};     // 100 means finished  and 0 means No path
+
+  int thCurrentJuncIndex = 0;   //Current junction   0: 12, 1: 32, 2: 16
+  int thCurrentJunc[4] = {0, 0, 0, 0}; //Get a copy of current junction and do the shifting
+
+  int thDirection = 0;
+  //String thJuncType;
+/////////////////////////////////////////////////////////////////////////////////////////////
 
 
 const int ProxSensor_1=A0;       // 6 Right
@@ -45,7 +71,20 @@ void setup()
   if (!oled.begin(SSD1306_SWITCHCAPVCC, 0x3C)) {
     Serial.println(F("SSD1306 allocation failed"));
     while (true);
-  }  
+  } 
+
+  ///////////////////// floorPattern //////////////////////////
+   
+      // initialize sensor values to 0
+      for (int i = 0; i < NUM_SENSORS; i++) {
+        for (int j = 0; j < NUM_VALUES; j++) {
+          sensorValues[i][j] = 0;
+        }
+      }
+
+  ///////////////////////////////////////////////////////////// 
+
+  
 
   pinMode(ProxSensor_1,INPUT);    
   pinMode(ProxSensor_2,INPUT);    
@@ -97,7 +136,21 @@ int d_error = 0;
 int  i_error = 0;
 
 void loop(){ 
-     pidLineFollower();
+     //pidLineFollower();
+     floorPattern();
+     if(junctionDetected){
+       Stop();
+      //Do the required operation
+       thAutomaticRouting(1);      
+       Serial.println("***************************************************************");
+       delay(5000);
+       junctionDetected = false;
+      
+     }
+     //else{
+     //  pidStraightLineFollower();     
+    // } 
+
   
 }
 
@@ -119,6 +172,13 @@ void turnRight(){
   digitalWrite(in4, LOW) ;  
 }
 
+void Stop(){
+  digitalWrite(in1, LOW);
+  digitalWrite(in2, LOW) ;
+  digitalWrite(in3, LOW);
+  digitalWrite(in4, LOW) ;  
+}
+
 void forward(int lSpeed,int rSpeed){
   analogWrite(enA, lSpeed);
   analogWrite(enB, rSpeed);
@@ -129,35 +189,6 @@ void forward(int lSpeed,int rSpeed){
 }
 
 void pidLineFollower(){
-      
-  inputVal[0]  = analogRead(ProxSensor_1);
-  inputVal[1]  = analogRead(ProxSensor_2);
-  inputVal[2]  = analogRead(ProxSensor_3);
-  inputVal[3]  = analogRead(ProxSensor_4);
-  inputVal[4]  = analogRead(ProxSensor_5);
-  inputVal[5]  = analogRead(ProxSensor_6);
-  inputVal[6]  = analogRead(ProxSensor_7);
-  inputVal[7]  = analogRead(ProxSensor_8);
-  inputVal[8]  = analogRead(ProxSensor_9);
-  inputVal[9]  = analogRead(ProxSensor_10);
-  inputVal[10]  = analogRead(ProxSensor_11);
-  inputVal[11]  = analogRead(ProxSensor_12);
-
-  for (int i = 0; i<12; i++){
-          if(inputVal[i]<200){
-                inputVal[i] = 1;            
-          }
-          else{
-                inputVal[i] = 0;
-          }
-          Serial.print(inputVal[i]);
-          Serial.print(" ");
-
-  }
-  Serial.println();
-    
- 
-
   
   error = 10*(inputVal[0]*6 +inputVal[1]*5 +inputVal[2]*4 + inputVal[3]*3 +inputVal[4]*2 + inputVal[5] -(inputVal[11]*6 +inputVal[10]*5 +inputVal[9]*4 + inputVal[8]*3 +inputVal[7]*2 + inputVal[6]) ) ; //(2*(inputVal[0]+inputVal[1]+inputVal[2]+inputVal[3]+inputVal[4]+inputVal[5]+inputVal[6]));
 
@@ -202,7 +233,7 @@ int base_speed = 80;
   else if(pid<-100){
     turnLeft();
     delay(250);
-  }
+  } 
   else{
   base_speed = 120;  
   plus_speed = base_speed + pid;
@@ -223,7 +254,97 @@ int base_speed = 80;
   else if (base_speed - pid < 50){
     min_speed =50;  
   }
+  } 
+}
+
+
+void pidStraightLineFollower(){
+  
+  error = 10*(inputVal[2]*10 + inputVal[3]*6 +inputVal[4]*3 + inputVal[5] - (inputVal[9]*10 + inputVal[8]*6 +inputVal[7]*3 + inputVal[6]) ) ; //(2*(inputVal[0]+inputVal[1]+inputVal[2]+inputVal[3]+inputVal[4]+inputVal[5]+inputVal[6]));
+
+  for (int i = 0; i<4 ; i++){
+    error_list[i] = error_list[i+1];
   }
+
+  error_list[4] = error;
+  d_error = error_list[4] - error_list[3];
+
+  i_error = i_error + error;
+  int pid = kp*error + kd*d_error + ki*i_error;  
+
+  oled.clearDisplay();
+  oled.setTextSize(1);       
+  oled.setTextColor(WHITE);
+  oled.setCursor(0, 40);
+  for(int j=0; j<12; j++){
+        oled.print(inputVal[j]);
+  }    
+  
+  
+  oled.display();
+
+int base_speed = 80;  
+ int plus_speed = 80;
+ int min_speed = 80;
+
+
+
+
+
+  base_speed = 80;  
+  plus_speed = base_speed + pid;
+  min_speed = base_speed - pid;
+
+/*
+  if(pid>100){
+    turnRight();
+    delay(250);
+  }
+  else if(pid<-100){
+    turnLeft();
+    delay(250);
+  } 
+  else{
+  base_speed = 120;  
+  plus_speed = base_speed + pid;
+  min_speed = base_speed - pid;
+
+  if (base_speed + pid > 250){
+    plus_speed =250;    
+  }
+
+  else if(base_speed - pid > 250){
+    min_speed = 250;
+  }
+
+  if (base_speed + pid < 50){
+    plus_speed = 50;
+  }
+
+  else if (base_speed - pid < 50){
+    min_speed =50;  
+  }
+  }   */
+
+  base_speed = 120; 
+  plus_speed = base_speed + pid;
+  min_speed = base_speed - pid;
+
+  if (base_speed + pid > 250){
+    plus_speed =250;    
+  }
+
+  else if(base_speed - pid > 250){
+    min_speed = 250;
+  }
+
+  if (base_speed + pid < 50){
+    plus_speed = 50;
+  }
+
+  else if (base_speed - pid < 50){
+    min_speed =50;  
+  } 
   
 
   oled.setTextSize(1);       
@@ -240,5 +361,266 @@ int base_speed = 80;
       
 
 
+}
+
+void readLineSensors(){
+            
+                          
+            inputVal[0]  = analogRead(ProxSensor_1);
+            inputVal[1]  = analogRead(ProxSensor_2);
+            inputVal[2]  = analogRead(ProxSensor_3);
+            inputVal[3]  = analogRead(ProxSensor_4);
+            inputVal[4]  = analogRead(ProxSensor_5);
+            inputVal[5]  = analogRead(ProxSensor_6);
+            inputVal[6]  = analogRead(ProxSensor_7);
+            inputVal[7]  = analogRead(ProxSensor_8);
+            inputVal[8]  = analogRead(ProxSensor_9);
+            inputVal[9]  = analogRead(ProxSensor_10);
+            inputVal[10]  = analogRead(ProxSensor_11);
+            inputVal[11]  = analogRead(ProxSensor_12);
+
+            for (int i = 0; i<12; i++){  //Convert analog inputs to digital
+                    if(inputVal[i]<200){
+                          inputVal[i] = 1;            
+                    }
+                    else{
+                          inputVal[i] = 0;
+                    }
+                    Serial.print(inputVal[i]);
+                    Serial.print(" ");
+
+            }
+            Serial.println();
+              
+ 
+
+
+            // shift values
+            for (int i = 0; i < NUM_SENSORS; i++) {
+                  for (int j = NUM_VALUES - 1; j > 0; j--) {
+                        sensorValues[i][j] = sensorValues[i][j-1];
+              }
+            }            
+            for (int i = 0; i < NUM_SENSORS; i++) {
+                        //sensorValues[i][0] = analogRead(i);
+                        sensorValues[i][0] = inputVal[i];
+              }
+
+            for (int i = 0; i<3; i++){      // for 3 sensor regions
+                  lineSensorCount[i] = 0; //initial Value
+                  for(int j = 0; j<4;  j++){
+                      lineSensorCount[i] += inputVal[4*i+j];
+                  }
+            }
+}
+
+void floorPattern(){
+            //delay(500);
+            //Serial.println("-------------------------------------------");
+            //Serial.print("pattern:  ");
+            Serial.print(linePathPattern);
+            Serial.print("  ");
+            //Serial.print("Junction detected:  ");
+            Serial.println(junctionDetected);
+            //Serial.println("--------------------------------------------");
+
+            readLineSensors();
+
+            //Detect patterns
+            if(not pathCrossing){
+                      if((lineSensorCount[0] >2) and (lineSensorCount[1] >2) and (lineSensorCount[2] >2)){
+                              linePathPattern = "WhiteLine";
+                              //forward(50,50);
+                              pathCrossing = true;                              
+                      }
+                      else if((lineSensorCount[0] <2 ) and (lineSensorCount[1] >=1) and (lineSensorCount[2] < 2 )){
+                              linePathPattern = "Line";
+                              //pathCrossing = true;
+                      }
+                      else if((lineSensorCount[0] >2 ) and (lineSensorCount[1] >=1) and (lineSensorCount[2] < 2 )){
+                              linePathPattern = "HardRightTurn";
+                              //forward(50,50);
+                              pathCrossing = true;
+                      }
+                      else if((lineSensorCount[0] <2 ) and (lineSensorCount[1] >=1) and (lineSensorCount[2] >2 )){
+                              linePathPattern = "HardLeftTurn";
+                              //forward(50,50);
+                              pathCrossing = true;
+                      }
+
+            }
+            else{
+                      pathCrossing = false;
+                      delay(150);
+                      Stop();
+                      //forward(50,50);
+                      String prePathPattern = linePathPattern;
+                      //delay(100); // Change this
+                      readLineSensors();
+                      /*for(int j =0; j<4 ; j++){
+                              readLineSensors();
+                      } */
+                      
+                      if((lineSensorCount[0] >2) and (lineSensorCount[1] >2) and (lineSensorCount[2] >2)){
+                              linePathPattern = "WhiteLine";
+                              //pathCrossing = true;                              
+                      }
+                      else if((lineSensorCount[0] <2 ) and (lineSensorCount[1] >=1) and (lineSensorCount[2] < 2 )){
+                              linePathPattern = "Line";
+                              //junctionDetected = true;
+                              //pathCrossing = true;
+                      }
+                      else if((lineSensorCount[0] <2 ) and (lineSensorCount[1] <1) and (lineSensorCount[2] < 2 )){
+                              linePathPattern = "BlackLine";
+                              //junctionDetected = true;
+                              //pathCrossing = true;
+                      }
+                      
+                      
+
+                      if((prePathPattern=="WhiteLine") and (linePathPattern=="WhiteLine")){
+                              linePathPattern = "WhiteBox";
+                      }
+                      else if((prePathPattern=="WhiteLine") and (linePathPattern=="Line")){
+                              linePathPattern = "Junction";
+                              junctionDetected = true;
+                      }
+                      else if((prePathPattern=="WhiteLine") and (linePathPattern=="BlackLine")){
+                              linePathPattern = "Junction";
+                              junctionDetected = true;
+                      }
+                      else if((prePathPattern=="HardRightTurn") and (linePathPattern=="Line")){
+                              linePathPattern = "Junction";
+                              junctionDetected = true;
+                      }
+                      else if((prePathPattern=="HardLeftTurn") and (linePathPattern=="Line")){
+                              linePathPattern = "Junction";
+                              junctionDetected = true;
+                      }
+
+                      
+
+            }
+}
+
+void thRightShift_90(){   //Right shift Junction mapping
+          //copy original list to currrent junction list
+          for(int j =0; j<4; j++){
+            thCurrentJunc[j] = thJunc[thCurrentJuncIndex][j];
+          }
+
+          int temp = thCurrentJunc[-1];  //last element of current junction
+          for (int i =1; i<4 ; i++){
+            thCurrentJunc[i] = thCurrentJunc[i-1];
+          }
+          thCurrentJunc[0] =  temp;
+}
+
+void thLeftShift_90(){   //Left shift Junction mapping
+          //copy original list to currrent junction list
+          for(int j =0; j<4; j++){
+            thCurrentJunc[j] = thJunc[thCurrentJuncIndex][j];
+          }
+
+          int temp = thCurrentJunc[0];  //first element of current junction
+          for (int i =0; i<3 ; i++){
+            thCurrentJunc[i] = thCurrentJunc[i+1];
+          }
+          thCurrentJunc[-1]= temp;
+}
+
+void thAutomaticRouting(int num){      //Take the decision at junctions
+          //Update floor mappings with respect to directions
+          // num is the location to reach
+          // Write speeds to motors to rotate
+          //delay
+          //thPathFinder()
+          for(int i =0; i<4; i++){
+            thCurrentJunc[i] = thJunc[thCurrentJuncIndex][i];
+          }
+
+          Serial.println(thArraySearch(num, thCurrentJunc));
+          if(thArraySearch(num,thCurrentJunc) != -1){
+             int mainNum = thArraySearch(num, thCurrentJunc);
+             if(mainNum == 0){
+               //turnLeft
+               Serial.println("Turn Left");
+               delay(1000);
+             }
+             else if(mainNum == 1){
+               //forward
+               Serial.println("Forward");
+               delay(1000);
+             }
+             else{
+               //turnRight
+               Serial.println("Turn Right");
+               delay(1000);
+             }
+              
+          }          
+          else{
+              int thSubNum = 0;
+              if(num>12){
+                thSubNum = num/4;
+              }
+              else{
+                thSubNum = num*4;
+              }
+              int mainNum = thArraySearch(thSubNum, thCurrentJunc);
+              if(mainNum != -1){
+                    if(mainNum == 0){
+                      Serial.println("Turn Left");
+                      delay(1000);
+                      //turnLeft
+                    }
+                    else if(mainNum == 1){
+                    //forward
+                    Serial.println("Forward");
+                    delay(1000);
+                    }
+                    else{
+                    //turnRight
+                    Serial.println("Turn Right");
+                    delay(1000);
+                  }
+              }
+              else{
+              int mainNum = thArraySearch(8, thCurrentJunc);
+              if(mainNum != -1){
+                    if(mainNum == 0){
+                      Serial.println("Turn Left");
+                      delay(1000);
+                      //turnLeft
+                    }
+                    else if(mainNum == 1){
+                    //forward
+                    Serial.println("Forward");
+                    delay(1000);
+                    }
+                    else{
+                    //turnRight
+                    Serial.println("Turn Right");
+                    delay(1000);
+                  }
+              }
+
+              }
+          }
+
+          
+          
+
+}    
+
+int thArraySearch(int num , int arr[4]){
+  for(int k =0; k<4; k++){
+    if(num== arr[k]){
+      return k;
+    }
+  } 
+  return -1;
+    
+  
 }
 
