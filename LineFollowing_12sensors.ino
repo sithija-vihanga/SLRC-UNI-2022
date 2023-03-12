@@ -29,7 +29,9 @@ Adafruit_SSD1306 oled(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, -1);
 
   int thCurrentJuncIndex = 0;   //Current junction   0: 12, 1: 32, 2: 16
   int thCurrentJunc[4] = {0, 0, 0, 0}; //Get a copy of current junction and do the shifting
-
+  int thCurrentLocation = 100;  //FOr automatic routing to store current place
+  int thDestination ;
+  bool thDestinationReached = false;
   int thDirection = 0;
   //String thJuncType;
 /////////////////////////////////////////////////////////////////////////////////////////////
@@ -136,20 +138,42 @@ int d_error = 0;
 int  i_error = 0;
 
 void loop(){ 
-     //pidLineFollower();
+    //floorPattern();
+    //readLineSensors();
+    //pidLineFollower();
+    
+    /*delay(1000);
+    rightTurn90();
+    delay(2000);
+    leftTurn90(); */
+    printToOled(20,String(thCurrentJuncIndex));
+    printToOled(30,String(thCurrentLocation));
      floorPattern();
      if(junctionDetected){
        Stop();
-      //Do the required operation
-       thAutomaticRouting(1);      
-       Serial.println("***************************************************************");
-       delay(5000);
+       if(not thDestinationReached){
+            //Do the required operation
+            thAutomaticRouting(2);      
+            Serial.println("***************************************************************");
+            //delay(5000);
+       }
+       else{  //Do node processing
+               Serial.println("node");
+
+       }
+       if(thDestination == thCurrentLocation){
+         Serial.println("____________Location Reached____________");
+         thDestinationReached = true;
+         printToOled(30,"Reached");
+         delay(5000);
+
+       }
        junctionDetected = false;
       
-     }
-     //else{
-     //  pidStraightLineFollower();     
-    // } 
+     }  
+     else{
+       pidStraightLineFollower();     
+     } 
 
   
 }
@@ -160,16 +184,17 @@ void turnLeft(){
   digitalWrite(in1, HIGH);
   digitalWrite(in2, LOW) ;
   digitalWrite(in3, LOW);
-  digitalWrite(in4, HIGH) ;  
+  digitalWrite(in4, HIGH) ;   
 }
 
 void turnRight(){
   analogWrite(enA, 150);
   analogWrite(enB, 150);
-   digitalWrite(in1, LOW);
+  digitalWrite(in1, LOW);
   digitalWrite(in2, HIGH) ;
   digitalWrite(in3, HIGH);
-  digitalWrite(in4, LOW) ;  
+  digitalWrite(in4, LOW) ; 
+  
 }
 
 void Stop(){
@@ -177,6 +202,18 @@ void Stop(){
   digitalWrite(in2, LOW) ;
   digitalWrite(in3, LOW);
   digitalWrite(in4, LOW) ;  
+}
+
+void rightTurn90(){
+  turnRight();
+  delay(700);
+  Stop();
+}
+
+void leftTurn90(){
+  turnLeft();
+  delay(700);
+  Stop();
 }
 
 void forward(int lSpeed,int rSpeed){
@@ -255,8 +292,18 @@ int base_speed = 80;
     min_speed =50;  
   }
   } 
+   oled.setTextSize(1);       
+  oled.setTextColor(WHITE);
+  oled.setCursor(0, 50);     
+  oled.print(pid);
+  oled.print("    ");
+  oled.print(plus_speed);
+  oled.print("    ");
+  oled.println(min_speed);
+  oled.display();
+  forward(plus_speed,min_speed);
+  
 }
-
 
 void pidStraightLineFollower(){
   
@@ -283,7 +330,7 @@ void pidStraightLineFollower(){
   
   oled.display();
 
-int base_speed = 80;  
+ int base_speed = 80;  
  int plus_speed = 80;
  int min_speed = 80;
 
@@ -530,84 +577,115 @@ void thLeftShift_90(){   //Left shift Junction mapping
 }
 
 void thAutomaticRouting(int num){      //Take the decision at junctions
-          //Update floor mappings with respect to directions
-          // num is the location to reach
-          // Write speeds to motors to rotate
-          //delay
-          //thPathFinder()
-          for(int i =0; i<4; i++){
-            thCurrentJunc[i] = thJunc[thCurrentJuncIndex][i];
-          }
+                  thDestination = num;
+                  //Update floor mappings with respect to directions
+                  // num is the location to reach
+                  // Write speeds to motors to rotate
+                  //delay
+                  //thPathFinder()
+                  for(int i =0; i<4; i++){
+                    thCurrentJunc[i] = thJunc[thCurrentJuncIndex][i];   //Get the current junction from the list
+                  }
 
-          Serial.println(thArraySearch(num, thCurrentJunc));
-          if(thArraySearch(num,thCurrentJunc) != -1){
-             int mainNum = thArraySearch(num, thCurrentJunc);
-             if(mainNum == 0){
-               //turnLeft
-               Serial.println("Turn Left");
-               delay(1000);
-             }
-             else if(mainNum == 1){
-               //forward
-               Serial.println("Forward");
-               delay(1000);
-             }
-             else{
-               //turnRight
-               Serial.println("Turn Right");
-               delay(1000);
-             }
-              
-          }          
-          else{
-              int thSubNum = 0;
-              if(num>12){
-                thSubNum = num/4;
-              }
-              else{
-                thSubNum = num*4;
-              }
-              int mainNum = thArraySearch(thSubNum, thCurrentJunc);
-              if(mainNum != -1){
+                  Serial.println(thArraySearch(num, thCurrentJunc));
+                  if(thArraySearch(num,thCurrentJunc) != -1){  //Enter only if num available in the junction data
+                    //Destination is in the junction data
+                    thCurrentLocation = num;
+                    int mainNum = thArraySearch(num, thCurrentJunc);
                     if(mainNum == 0){
-                      Serial.println("Turn Left");
-                      delay(1000);
                       //turnLeft
+                      Serial.println("Turn Left");
+                      printToOled(10,"Left");
+                      leftTurn90();
+                      //delay(1000);
                     }
-                    else if(mainNum == 1){
-                    //forward
-                    Serial.println("Forward");
-                    delay(1000);
+                    else if(mainNum == 1){  //not useful
+                      //forward
+                      Serial.println("Forward");
+                      printToOled(10,"None");
+                      //forward(150,150);
+                      
+                      //delay(1000);
                     }
                     else{
-                    //turnRight
-                    Serial.println("Turn Right");
-                    delay(1000);
-                  }
-              }
-              else{
-              int mainNum = thArraySearch(8, thCurrentJunc);
-              if(mainNum != -1){
-                    if(mainNum == 0){
-                      Serial.println("Turn Left");
-                      delay(1000);
-                      //turnLeft
+                      //turnRight
+                      Serial.println("Turn Right");
+                      printToOled(10,"Right");
+                      rightTurn90();
+                      
+                      //delay(1000);
                     }
-                    else if(mainNum == 1){
-                    //forward
-                    Serial.println("Forward");
-                    delay(1000);
-                    }
-                    else{
-                    //turnRight
-                    Serial.println("Turn Right");
-                    delay(1000);
+                      
+                  }          
+                  else{
+                      int thSubNum = 0;     //If junction does not contain the searching number
+                      if(num>12){
+                        thSubNum = num/4;    //Get the number of middle point
+                      }
+                      else{
+                        thSubNum = num*4;
+                      }
+                      int mainNum = thArraySearch(thSubNum, thCurrentJunc);
+                      if(mainNum != -1){
+                            //Sub-Destination is in the junction data
+                            thCurrentLocation = num;
+                            if(mainNum == 0){
+                              Serial.println("Turn Left");
+                              printToOled(10,"Left");
+                              leftTurn90();
+                              //delay(1000);
+                              //turnLeft
+                            }
+                            else if(mainNum == 1){
+                            //forward
+                            Serial.println("Forward");
+                            printToOled(10,"Forward");
+                            forward(150,150);
+                            thCurrentJuncIndex++;    //Change this (update junction)
+                            //delay(1000);
+                            }
+                            else{
+                            //turnRight
+                            Serial.println("Turn Right");
+                            printToOled(10,"Right");
+                            rightTurn90();
+                            //delay(1000);
+                          }
+                      }
+                      else{
+                      int mainNum = thArraySearch(8, thCurrentJunc);  // 8 is definitely in the array
+                      if(mainNum != -1){
+                            //Destination is in the junction data
+                            thCurrentLocation = 8;
+                            if(mainNum == 0){
+                              Serial.println("Turn Left");
+                              printToOled(10,"Left");
+                              leftTurn90();
+                              //delay(1000);
+                              //turnLeft
+                            }
+                            else if(mainNum == 1){
+                            //forward
+                            Serial.println("Forward");
+                            printToOled(10,"Forward");
+                            forward(150,150);
+                            thCurrentJuncIndex++;    //Change this (update junction)
+                            //delay(1000);
+                            }
+                            else{
+                            //turnRight
+                            Serial.println("Turn Right");
+                            printToOled(10,"Right");
+                            rightTurn90();
+                            //delay(1000);
+                          }
+                      }
+
+                      }
                   }
-              }
-
-              }
-          }
-
+          
+                  //Serial.println("Location Reached");
+                  //delay(2000);
           
           
 
@@ -622,5 +700,14 @@ int thArraySearch(int num , int arr[4]){
   return -1;
     
   
+}
+
+void printToOled(int y, String text){
+          oled.clearDisplay(); // clear display
+          oled.setTextSize(1);          // text size
+          oled.setTextColor(WHITE);     // text color
+          oled.setCursor(0, y);        // position to display
+          oled.println(text); // text to display
+          oled.display();               // show on OLED
 }
 
