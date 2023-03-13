@@ -130,7 +130,7 @@ void setup()
 
 int error_list[5] = {0,0,0,0,0};
 float kp = 0.6;
-float kd = 0.;
+float kd = 0.3;
 float ki = 0.0000;
 
 int error = 0;
@@ -146,41 +146,31 @@ void loop(){
     rightTurn90();
     delay(2000);
     leftTurn90(); */
-    printToOled(20,String(thCurrentJuncIndex));
-    printToOled(30,String(thCurrentLocation));
-     floorPattern();
-     if(junctionDetected){
-       Stop();
-       if(not thDestinationReached){
-            //Do the required operation
-            thAutomaticRouting(2);      
-            Serial.println("***************************************************************");
-            //delay(5000);
-       }
-       else{  //Do node processing
-               Serial.println("node");
-
-       }
-       if(thDestination == thCurrentLocation){
-         Serial.println("____________Location Reached____________");
-         thDestinationReached = true;
-         printToOled(30,"Reached");
-         delay(5000);
-
-       }
-       junctionDetected = false;
-      
-     }  
-     else{
-       pidStraightLineFollower();     
-     } 
+    
+    //settleLine();
+    //delay(5000);
+    if(not thDestinationReached){
+           thGoTo(32);
+    }
+   else{   //Change this
+        //pidStraightLineFollower();
+        forward(150,150);
+        delay(2000);
+        Stop();
+        delay(100);
+        leftTurn180();
+        delay(100);
+        //pidStraightLineFollower();
+        forward(150,150);
+        delay(2000);
+   }
 
   
 }
 
 void turnLeft(){
-  analogWrite(enA, 150);
-  analogWrite(enB, 150);
+  analogWrite(enA, 100);
+  analogWrite(enB, 100);
   digitalWrite(in1, HIGH);
   digitalWrite(in2, LOW) ;
   digitalWrite(in3, LOW);
@@ -188,8 +178,8 @@ void turnLeft(){
 }
 
 void turnRight(){
-  analogWrite(enA, 150);
-  analogWrite(enB, 150);
+  analogWrite(enA, 100);
+  analogWrite(enB, 100);
   digitalWrite(in1, LOW);
   digitalWrite(in2, HIGH) ;
   digitalWrite(in3, HIGH);
@@ -213,6 +203,12 @@ void rightTurn90(){
 void leftTurn90(){
   turnLeft();
   delay(700);
+  Stop();
+}
+
+void leftTurn180(){
+  turnLeft();
+  delay(1400);
   Stop();
 }
 
@@ -307,7 +303,7 @@ int base_speed = 80;
 
 void pidStraightLineFollower(){
   
-  error = 10*(inputVal[2]*10 + inputVal[3]*6 +inputVal[4]*3 + inputVal[5] - (inputVal[9]*10 + inputVal[8]*6 +inputVal[7]*3 + inputVal[6]) ) ; //(2*(inputVal[0]+inputVal[1]+inputVal[2]+inputVal[3]+inputVal[4]+inputVal[5]+inputVal[6]));
+  error = 10*( inputVal[3]*6 +inputVal[4]*3 + inputVal[5]*2 - ( + inputVal[8]*6 +inputVal[7]*3 + inputVal[6]*2) ) ; //(2*(inputVal[0]+inputVal[1]+inputVal[2]+inputVal[3]+inputVal[4]+inputVal[5]+inputVal[6]));
 
   for (int i = 0; i<4 ; i++){
     error_list[i] = error_list[i+1];
@@ -334,11 +330,7 @@ void pidStraightLineFollower(){
  int plus_speed = 80;
  int min_speed = 80;
 
-
-
-
-
-  base_speed = 80;  
+  //base_speed = 80;  
   plus_speed = base_speed + pid;
   min_speed = base_speed - pid;
 
@@ -377,13 +369,19 @@ void pidStraightLineFollower(){
   plus_speed = base_speed + pid;
   min_speed = base_speed - pid;
 
+  /*if(linePathPattern == "Line"){
+      if((pid> 50) or (pid<-50)){
+          settleLine();
+      }
+  } */
+
   if (base_speed + pid > 250){
     plus_speed =250;    
-  }
+  } 
 
   else if(base_speed - pid > 250){
     min_speed = 250;
-  }
+  } 
 
   if (base_speed + pid < 50){
     plus_speed = 50;
@@ -475,6 +473,7 @@ void floorPattern(){
 
             //Detect patterns
             if(not pathCrossing){
+                      printToOled(30, linePathPattern);
                       if((lineSensorCount[0] >2) and (lineSensorCount[1] >2) and (lineSensorCount[2] >2)){
                               linePathPattern = "WhiteLine";
                               //forward(50,50);
@@ -489,7 +488,8 @@ void floorPattern(){
                               //forward(50,50);
                               pathCrossing = true;
                       }
-                      else if((lineSensorCount[0] <2 ) and (lineSensorCount[1] >=1) and (lineSensorCount[2] >2 )){
+                      //else if((lineSensorCount[0] <2 ) and (lineSensorCount[1] >=1) and (lineSensorCount[2] >2 )){
+                      else{
                               linePathPattern = "HardLeftTurn";
                               //forward(50,50);
                               pathCrossing = true;
@@ -498,8 +498,10 @@ void floorPattern(){
             }
             else{
                       pathCrossing = false;
-                      delay(150);
+                      
+                      delay(250);
                       Stop();
+                
                       //forward(50,50);
                       String prePathPattern = linePathPattern;
                       //delay(100); // Change this
@@ -517,7 +519,7 @@ void floorPattern(){
                               //junctionDetected = true;
                               //pathCrossing = true;
                       }
-                      else if((lineSensorCount[0] <2 ) and (lineSensorCount[1] <1) and (lineSensorCount[2] < 2 )){
+                      else if((lineSensorCount[0] <1 ) and (lineSensorCount[1] <1) and (lineSensorCount[2] < 1 )){
                               linePathPattern = "BlackLine";
                               //junctionDetected = true;
                               //pathCrossing = true;
@@ -541,6 +543,15 @@ void floorPattern(){
                               junctionDetected = true;
                       }
                       else if((prePathPattern=="HardLeftTurn") and (linePathPattern=="Line")){
+                              linePathPattern = "Junction";
+                              junctionDetected = true;
+                      }
+                      //Only for tower of hanoi
+                      else if((prePathPattern=="HardLeftTurn") and (linePathPattern=="BlackLine")){
+                              linePathPattern = "Junction";
+                              junctionDetected = true;
+                      }
+                      else if((prePathPattern=="HardRightTurn") and (linePathPattern=="BlackLine")){
                               linePathPattern = "Junction";
                               junctionDetected = true;
                       }
@@ -597,6 +608,7 @@ void thAutomaticRouting(int num){      //Take the decision at junctions
                       Serial.println("Turn Left");
                       printToOled(10,"Left");
                       leftTurn90();
+                      settleLine();
                       //delay(1000);
                     }
                     else if(mainNum == 1){  //not useful
@@ -612,6 +624,7 @@ void thAutomaticRouting(int num){      //Take the decision at junctions
                       Serial.println("Turn Right");
                       printToOled(10,"Right");
                       rightTurn90();
+                      settleLine();
                       
                       //delay(1000);
                     }
@@ -628,11 +641,12 @@ void thAutomaticRouting(int num){      //Take the decision at junctions
                       int mainNum = thArraySearch(thSubNum, thCurrentJunc);
                       if(mainNum != -1){
                             //Sub-Destination is in the junction data
-                            thCurrentLocation = num;
+                            thCurrentLocation = thSubNum;
                             if(mainNum == 0){
                               Serial.println("Turn Left");
                               printToOled(10,"Left");
                               leftTurn90();
+                              settleLine();
                               //delay(1000);
                               //turnLeft
                             }
@@ -641,6 +655,7 @@ void thAutomaticRouting(int num){      //Take the decision at junctions
                             Serial.println("Forward");
                             printToOled(10,"Forward");
                             forward(150,150);
+                            settleLine();
                             thCurrentJuncIndex++;    //Change this (update junction)
                             //delay(1000);
                             }
@@ -649,6 +664,7 @@ void thAutomaticRouting(int num){      //Take the decision at junctions
                             Serial.println("Turn Right");
                             printToOled(10,"Right");
                             rightTurn90();
+                            settleLine();
                             //delay(1000);
                           }
                       }
@@ -661,6 +677,7 @@ void thAutomaticRouting(int num){      //Take the decision at junctions
                               Serial.println("Turn Left");
                               printToOled(10,"Left");
                               leftTurn90();
+                              settleLine();
                               //delay(1000);
                               //turnLeft
                             }
@@ -669,6 +686,7 @@ void thAutomaticRouting(int num){      //Take the decision at junctions
                             Serial.println("Forward");
                             printToOled(10,"Forward");
                             forward(150,150);
+                            settleLine();
                             thCurrentJuncIndex++;    //Change this (update junction)
                             //delay(1000);
                             }
@@ -677,6 +695,7 @@ void thAutomaticRouting(int num){      //Take the decision at junctions
                             Serial.println("Turn Right");
                             printToOled(10,"Right");
                             rightTurn90();
+                            settleLine();
                             //delay(1000);
                           }
                       }
@@ -711,3 +730,69 @@ void printToOled(int y, String text){
           oled.display();               // show on OLED
 }
 
+void settleLine(){
+  int MazeError=1;
+  while(!(MazeError==0)){
+  readLineSensors();
+  // if ((inputVal[6]==0)&&(inputVal[7]==0)){
+  //     MazeError=0;
+  //     break;
+  // }
+  MazeError = -200*inputVal[0]-100*inputVal[1]-50*inputVal[2]-10*inputVal[3]-5*inputVal[4]+5*inputVal[7]+10*inputVal[8]+50*inputVal[9]+100*inputVal[10]+200*inputVal[11];
+  
+  // if eror is +, take as robot has turn left(rigt sensors on the line)
+  // considerd when line goes toward the right the eror as positive (robot going out from the line to left)
+  // for positive error robot need to turn right  
+  // for negative error robot need to turn left
+    
+  //if (!((inputVal[6]==0)&&(inputVal[7]==0))){
+    //make adjusments to settle on the line
+  printToOled(20,String(MazeError));    
+    if (MazeError>10){
+      turnLeft(); 
+  }
+    else if (MazeError<-10){
+      turnRight(); 
+  }
+   else{
+     Stop();
+     printToOled(10,"Settled");
+     break;
+         
+   }
+//}
+}
+}
+
+int thGoTo(int num){
+    ////////////////////////////////////////////////////////////////////////////////////////////////////
+    printToOled(20,String(thCurrentJuncIndex));
+    printToOled(30,String(thCurrentLocation));
+     floorPattern();
+     if(junctionDetected){
+       Stop();
+       if(not thDestinationReached){
+            //Do the required operation
+            thAutomaticRouting(num);      
+            Serial.println("***************************************************************");
+            //delay(5000);
+       }
+       else{  //Do node processing
+               Serial.println("node");
+
+       }
+       if(thDestination == thCurrentLocation){
+         Serial.println("____________Location Reached____________");
+         thDestinationReached = true;
+         printToOled(30,"Reached");
+         delay(5000);
+
+       }
+       junctionDetected = false;
+      
+     }  
+     else{
+       pidStraightLineFollower();     
+     } 
+     //////////////////////////////////////////////////////////////////////////////////////////////////////////
+}
