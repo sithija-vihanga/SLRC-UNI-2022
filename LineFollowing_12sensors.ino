@@ -25,7 +25,7 @@
 
   ////////////////////////////// Tower of hanoi ///////////////////////////////////////////
   //Junction mapping
-  int thJunc[3][5] = {{ 48,  8,  3,  100 },
+  int thJunc[3][4] = {{ 48,  8,  3,  100 },
                       { 32,  4,  2,  12  },
                       { 16,  0,  1,  8   }};     // 100 means finished  and 0 means No path
 
@@ -34,8 +34,12 @@
   int thCurrentLocation = 100;  //FOr automatic routing to store current place
   int thDestination ;
   bool thDestinationReached = false;
-  int thDirection = 0;
+  //int thDirection = 0;
   bool thStarted = true;
+  int thLocationsToMove[4] = {1, 16, 3, 5};   //5 means the end of the list
+  int thLocationIndex = 0;
+  bool thComplete = false;
+  int thMainDirection = 0;
   //String thJuncType;
   /////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -131,8 +135,11 @@ for (int i = 0; i < NUM_SENSORS; i++) {
   oled.println("TEAM SPECTRO"); // text to display
   oled.display();               // show on OLED
 
+  //Remove this
+  thMainDirection = readMagAngle();
+}
   int count = 0;
-  }
+  
 
 int error_list[5] = {0,0,0,0,0};  //For both pid and straight line pid functions (Change if necessary)
 
@@ -151,7 +158,44 @@ int error = 0;
 int d_error = 0;
 int  i_error = 0;
 
+
+
 void loop(){ 
+  /////////////////////////////////////////////////////////////////////////
+    int thSector = thCheckOrientation();
+    printToOled(10,String(thMainDirection));
+    printToOled(20,String(a));
+    if(thSector == 0){
+      for(int j =0; j<4; j++){
+            thCurrentJunc[j] = thJunc[thCurrentJuncIndex][j];
+          }
+    }
+    else if(thSector == 1){
+      thLeftShift_90();
+    }
+    else if(thSector == 2){
+      thShift_180();
+    }
+    else if(thSector == 3){
+      thRightShift_90();
+    }
+    
+    oled.clearDisplay(); // clear display
+    oled.setTextSize(1);          // text size
+    oled.setTextColor(WHITE);     // text color
+    oled.setCursor(0, 40);        // position to display
+    for(int k =0 ; k<4; k++){
+      oled.print(String(thCurrentJunc[k]));
+      oled.print(" ");
+    }
+    oled.println(""); // text to display
+    oled.display();               // show on OLED
+
+    ///////////////////////////////////////////////////////////////////////////////////
+
+    //thPathFinder();
+
+
     //floorPattern();
     //readLineSensors();
     //pidLineFollower();
@@ -175,24 +219,24 @@ void loop(){
 
 
     }*/
-
+   /*
     if(not thDestinationReached){
            thGoTo(32);
     }
    else{   //Change this
         //pidStraightLineFollower();
         thNodeAnalysis();
-        /*
-        forward(150,150);
-        delay(2000);
-        Stop();
-        delay(100);
-        leftTurn180();
-        delay(100);
+        
+        //forward(150,150);
+        //delay(2000);
+        //Stop();
+        //delay(100);
+        //leftTurn180();
+        //delay(100);
         //pidStraightLineFollower();
-        forward(150,150);
-        delay(2000); */
-   }  
+        //forward(150,150);
+        //delay(2000); 
+   }   */
    ////////////////////////////////////////////////// 
    /*
    delay(2000);
@@ -469,7 +513,7 @@ void floorPattern(){
             //Detect patterns
             if(not pathCrossing){
                       printToOled(30, linePathPattern);
-                      if((lineSensorCount[0] >3) and (lineSensorCount[1] >3) and (lineSensorCount[2] >3)){
+                      if((lineSensorCount[0] >2) and (lineSensorCount[1] >2) and (lineSensorCount[2] >2)){
                               linePathPattern = "WhiteLine";
                               //forward(50,50);
                               pathCrossing = true;                              
@@ -478,19 +522,25 @@ void floorPattern(){
                               linePathPattern = "Line";
                               //pathCrossing = true;
                       } */
-                      else if((lineSensorCount[0] >3 ) and (lineSensorCount[1] >=1) and (lineSensorCount[2] < 2 )){
+                      else if((lineSensorCount[0] >2 ) and (lineSensorCount[1] >=1) and (lineSensorCount[2] < 2 )){
                               linePathPattern = "HardRightTurn";
                               //forward(50,50);
                               pathCrossing = true;
                       }
-                      else if((lineSensorCount[0] <2 ) and (lineSensorCount[1] >=1) and (lineSensorCount[2] >3 )){
+                      else if((lineSensorCount[0] <2 ) and (lineSensorCount[1] >=1) and (lineSensorCount[2] >2 )){
                       //else{
                               linePathPattern = "HardLeftTurn";
                               //forward(50,50);
                               pathCrossing = true;
                       }
-                      else {
+
+                      else if((lineSensorCount[0] <2 ) and (lineSensorCount[1] >=1) and (lineSensorCount[2] < 2 )){
                               linePathPattern = "Line";
+                              //pathCrossing = true;
+                      }
+
+                      else {
+                              linePathPattern = "NULL";
                               //pathCrossing = true;
                       }
 
@@ -509,7 +559,7 @@ void floorPattern(){
                               readLineSensors();
                       } */
                       
-                      if((lineSensorCount[0] >3) and (lineSensorCount[1] >3) and (lineSensorCount[2] >3)){
+                      if((lineSensorCount[0] >2) and (lineSensorCount[1] >3) and (lineSensorCount[2] >2)){
                               linePathPattern = "WhiteLine";
                               //pathCrossing = true;                              
                       }
@@ -566,8 +616,8 @@ void thRightShift_90(){   //Right shift Junction mapping
             thCurrentJunc[j] = thJunc[thCurrentJuncIndex][j];
           }
 
-          int temp = thCurrentJunc[-1];  //last element of current junction
-          for (int i =1; i<4 ; i++){
+          int temp = thCurrentJunc[3];  //last element of current junction
+          for (int i =3; i>0 ; i--){
             thCurrentJunc[i] = thCurrentJunc[i-1];
           }
           thCurrentJunc[0] =  temp;
@@ -583,7 +633,29 @@ void thLeftShift_90(){   //Left shift Junction mapping
           for (int i =0; i<3 ; i++){
             thCurrentJunc[i] = thCurrentJunc[i+1];
           }
-          thCurrentJunc[-1]= temp;
+          thCurrentJunc[3]= temp;
+}
+
+void thShift_180(){
+          //copy original list to currrent junction list
+          for(int j =0; j<4; j++){
+            thCurrentJunc[j] = thJunc[thCurrentJuncIndex][j];
+          }
+
+          int temp = thCurrentJunc[3];  //last element of current junction
+          for (int i =3; i>0 ; i--){
+            thCurrentJunc[i] = thCurrentJunc[i-1];
+          }
+          thCurrentJunc[0] =  temp;
+
+          temp = thCurrentJunc[3];  //last element of current junction
+          for (int i =3; i>0 ; i--){
+            thCurrentJunc[i] = thCurrentJunc[i-1];
+          }
+          thCurrentJunc[0] =  temp;
+
+
+
 }
 
 void thAutomaticRouting(int num){      //Take the decision at junctions
@@ -596,6 +668,8 @@ void thAutomaticRouting(int num){      //Take the decision at junctions
                   for(int i =0; i<4; i++){
                     thCurrentJunc[i] = thJunc[thCurrentJuncIndex][i];   //Get the current junction from the list
                   }
+                  //Shift according to the direction
+                  
 
                   Serial.println(thArraySearch(num, thCurrentJunc));
                   if(thArraySearch(num,thCurrentJunc) != -1){  //Enter only if num available in the junction data
@@ -854,6 +928,66 @@ void thNodeAnalysis(){
   pidStraightLineFollower();
 }
 
+void thPathFinder(){
+  thMainDirection = readMagAngle();
+  Serial.print("Main angle: ");
+  Serial.println(thMainDirection);
+  while(not thComplete){
+      if(not thDestinationReached){
+              thGoTo(thLocationsToMove[thLocationIndex]);
+        }
+      else{   //Change this
+            //pidStraightLineFollower();
+            thNodeAnalysis();
+            Stop();
+            printToOled(10,"moving to next location");
+            delay(5000);
+            thLocationIndex++;
+            if(thLocationsToMove[thLocationIndex]==5){
+              printToOled(10,"TH Finished");
+              break;
+            }
+            thDestinationReached = false;
+      }
+  }
+}
+
+int thCheckOrientation(){
+    int thCurrentAngle =  readMagAngle();
+    int thAngleLimits[4];
+    //Initialize limits
+    thAngleLimits[0] = thMainDirection + 45;
+    for(int i = 1; i<4; i++){
+      thAngleLimits[i] = thAngleLimits[i-1] + 90;
+    }
+    for(int k =0; k<4; k++){   //Keeps values betweeen 
+      if(thAngleLimits[k]>360){
+        thAngleLimits[k] = thAngleLimits[k] - 360;
+      }
+    }
+    //Check for the required sector
+    for(int j=1; j<4; j++){
+        if(thAngleLimits[j-1] < thAngleLimits[j]){   //No 360 jump
+            if((thAngleLimits[j-1]<=thCurrentAngle) and (thCurrentAngle<thAngleLimits[j])){
+                return  j;
+            }
+        }
+        else{
+          
+            if(((thAngleLimits[j-1]<=thCurrentAngle) and (thCurrentAngle<360) ) or ((thCurrentAngle<thAngleLimits[j]) and (thCurrentAngle>0))){
+                return  j;
+            }
+
+        }
+    }
+    return 0; // if not in any sectors
+
+
+
+
+}
+
+void
 
 
 
