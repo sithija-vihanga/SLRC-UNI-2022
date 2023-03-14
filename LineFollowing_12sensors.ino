@@ -1,17 +1,19 @@
-#include <Wire.h>
-#include <Adafruit_GFX.h>
-#include <Adafruit_SSD1306.h>
+  #include <Wire.h>
+  #include <Adafruit_GFX.h>
+  #include <Adafruit_SSD1306.h>
+  #include <QMC5883LCompass.h>
+  QMC5883LCompass compass;
 
-#define SCREEN_WIDTH 128 // OLED display width,  in pixels
-#define SCREEN_HEIGHT 64 // OLED display height, in pixels
-#define NUM_SENSORS 12   //For floor pattern
-#define NUM_VALUES 6   //for floor pattern
+  #define SCREEN_WIDTH 128 // OLED display width,  in pixels
+  #define SCREEN_HEIGHT 64 // OLED display height, in pixels
+  #define NUM_SENSORS 12   //For floor pattern
+  #define NUM_VALUES 6   //for floor pattern
 
 
-// declare an SSD1306 display object connected to I2C
-Adafruit_SSD1306 oled(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, -1);
+  // declare an SSD1306 display object connected to I2C
+  Adafruit_SSD1306 oled(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, -1);
 
-//////////////////////// floorPattern //////////////////////////////////
+  //////////////////////// floorPattern for tower of hanoi //////////////////////////////////
   int floorCounter = 0; 
   String junctionType = "None";
   bool junctionDetected = false; 
@@ -19,9 +21,9 @@ Adafruit_SSD1306 oled(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, -1);
   bool pathCrossing = false;
   int sensorValues[NUM_SENSORS][NUM_VALUES];  // For 12 line sensors to store 10 previous values
   int lineSensorCount[3] = {0, 0, 0} ;
-///////////////////////////////////////////////////////////////////////
+  ///////////////////////////////////////////////////////////////////////
 
-////////////////////////////// Tower of hanoi ///////////////////////////////////////////
+  ////////////////////////////// Tower of hanoi ///////////////////////////////////////////
   //Junction mapping
   int thJunc[3][5] = {{ 48,  8,  3,  100 },
                       { 32,  4,  2,  12  },
@@ -33,56 +35,60 @@ Adafruit_SSD1306 oled(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, -1);
   int thDestination ;
   bool thDestinationReached = false;
   int thDirection = 0;
+  bool thStarted = true;
   //String thJuncType;
-/////////////////////////////////////////////////////////////////////////////////////////////
+  /////////////////////////////////////////////////////////////////////////////////////////////
+
+  ///////////////////////////// IR sensor pins /////////////////////////////////////////////
+
+  const int ProxSensor_1=A0;       // 6 Right
+  const int ProxSensor_2=A1;       // 5 Right
+  const int ProxSensor_3=A2;       // 4 Right
+  const int ProxSensor_4=A3;       // 3 Right
+  const int ProxSensor_5=A4;       // 2 Right
+  const int ProxSensor_6=A5;       // 1 Right
+  const int ProxSensor_7=A6;       // 1 left
+  const int ProxSensor_8=A7;       // 2 left
+  const int ProxSensor_9=A8;       // 3 left
+  const int ProxSensor_10=A9;       // 4 left
+  const int ProxSensor_11=A10;       // 5 left
+  const int ProxSensor_12=A11;       // 6 left
+
+  ///////////////////////////////////////////////////////////////////////////////////////////
 
 
-const int ProxSensor_1=A0;       // 6 Right
-const int ProxSensor_2=A1;       // 5 Right
-const int ProxSensor_3=A2;       // 4 Right
-const int ProxSensor_4=A3;       // 3 Right
-const int ProxSensor_5=A4;       // 2 Right
-const int ProxSensor_6=A5;       // 1 Right
-const int ProxSensor_7=A6;       // 1 left
-const int ProxSensor_8=A7;       // 2 left
-const int ProxSensor_9=A8;       // 3 left
-const int ProxSensor_10=A9;       // 4 left
-const int ProxSensor_11=A10;       // 5 left
-const int ProxSensor_12=A11;       // 6 left
+  int inputVal[12] = {0,0,0,0,0,0,0,0,0,0,0,0};
 
-
-
-int inputVal[12] = {0,0,0,0,0,0,0,0,0,0,0,0};
-
-// Motor A connections
-int enA = 2;
-int in1 = 5;
-int in2 = 4;
-// Motor B connections
-int enB = 3;
-int in3 = 7;
-int in4 = 6;
+  // Motor A connections
+  int enA = 2;
+  int in1 = 5;
+  int in2 = 4;
+  // Motor B connections
+  int enB = 3;
+  int in3 = 7;
+  int in4 = 6;
 
 
 
 void setup() 
 {    
   Serial.begin(9600);           
-
+  //Initialize magnetometer 
+  compass.init();
    // initialize OLED display with address 0x3C for 128x64
   if (!oled.begin(SSD1306_SWITCHCAPVCC, 0x3C)) {
-    Serial.println(F("SSD1306 allocation failed"));
-    while (true);
+          Serial.println(F("SSD1306 allocation failed"));
+          while (true);
   } 
 
   ///////////////////// floorPattern //////////////////////////
    
-      // initialize sensor values to 0
-      for (int i = 0; i < NUM_SENSORS; i++) {
-        for (int j = 0; j < NUM_VALUES; j++) {
-          sensorValues[i][j] = 0;
-        }
+// initialize sensor values to 0
+for (int i = 0; i < NUM_SENSORS; i++) {
+      for (int j = 0; j < NUM_VALUES; j++) {
+        sensorValues[i][j] = 0;
       }
+}
 
   ///////////////////////////////////////////////////////////// 
 
@@ -128,11 +134,19 @@ void setup()
   int count = 0;
   }
 
-int error_list[5] = {0,0,0,0,0};
+int error_list[5] = {0,0,0,0,0};  //For both pid and straight line pid functions (Change if necessary)
+
+//////////   For straight Lines   ///////// //////
+float kpS = 0.5;
+float kdS = 0.2;
+float kiS = 0.0000;
+
+////////////  For curved paths   //////////////////
 float kp = 0.6;
-float kd = 0.3;
+float kd = 0.;
 float ki = 0.0000;
 
+////////////// For both curve and straight pids ///////
 int error = 0;
 int d_error = 0;
 int  i_error = 0;
@@ -149,11 +163,26 @@ void loop(){
     
     //settleLine();
     //delay(5000);
+
+    /////////////////////////////////////////////////////////////  
+    /*if(thStarted){
+      thStarted = false;
+      pidLineFollower();
+      delay(1000);
+      pidStraightLineFollower();
+      delay(500);      
+      
+
+
+    }*/
+
     if(not thDestinationReached){
            thGoTo(32);
     }
    else{   //Change this
         //pidStraightLineFollower();
+        thNodeAnalysis();
+        /*
         forward(150,150);
         delay(2000);
         Stop();
@@ -162,24 +191,28 @@ void loop(){
         delay(100);
         //pidStraightLineFollower();
         forward(150,150);
-        delay(2000);
-   }
+        delay(2000); */
+   }  
+   ////////////////////////////////////////////////// 
+   /*
+   delay(2000);
+   turnedAngle(90,'L'); */
 
   
 }
 
-void turnLeft(){
-  analogWrite(enA, 100);
-  analogWrite(enB, 100);
+void turnLeft(int turningSpeed){
+  analogWrite(enA, turningSpeed);
+  analogWrite(enB, turningSpeed);
   digitalWrite(in1, HIGH);
   digitalWrite(in2, LOW) ;
   digitalWrite(in3, LOW);
   digitalWrite(in4, HIGH) ;   
 }
 
-void turnRight(){
-  analogWrite(enA, 100);
-  analogWrite(enB, 100);
+void turnRight(int turningSpeed){
+  analogWrite(enA, turningSpeed);
+  analogWrite(enB, turningSpeed);
   digitalWrite(in1, LOW);
   digitalWrite(in2, HIGH) ;
   digitalWrite(in3, HIGH);
@@ -195,20 +228,22 @@ void Stop(){
 }
 
 void rightTurn90(){
-  turnRight();
-  delay(700);
+  turnRight(150);
+  delay(600);
+  settleLine();
   Stop();
 }
 
 void leftTurn90(){
-  turnLeft();
-  delay(700);
+  turnLeft(150);
+  delay(600);
+  settleLine();
   Stop();
 }
 
 void leftTurn180(){
-  turnLeft();
-  delay(1400);
+  turnLeft(150);
+  delay(1200);
   Stop();
 }
 
@@ -222,17 +257,18 @@ void forward(int lSpeed,int rSpeed){
 }
 
 void pidLineFollower(){
-  
+  floorPattern();
+  //Error function
   error = 10*(inputVal[0]*6 +inputVal[1]*5 +inputVal[2]*4 + inputVal[3]*3 +inputVal[4]*2 + inputVal[5] -(inputVal[11]*6 +inputVal[10]*5 +inputVal[9]*4 + inputVal[8]*3 +inputVal[7]*2 + inputVal[6]) ) ; //(2*(inputVal[0]+inputVal[1]+inputVal[2]+inputVal[3]+inputVal[4]+inputVal[5]+inputVal[6]));
 
-  for (int i = 0; i<4 ; i++){
+  for (int i = 0; i<4 ; i++){   //Shift and store the error
     error_list[i] = error_list[i+1];
   }
-
   error_list[4] = error;
-  d_error = error_list[4] - error_list[3];
 
-  i_error = i_error + error;
+  d_error = error_list[4] - error_list[3];   //derivative
+
+  i_error = i_error + error;                 //integral
   int pid = kp*error + kd*d_error + ki*i_error;  
 
   oled.clearDisplay();
@@ -246,25 +282,21 @@ void pidLineFollower(){
   
   oled.display();
 
-int base_speed = 80;  
- int plus_speed = 80;
- int min_speed = 80;
+  int base_speed = 80;  
+  int plus_speed = 80;
+  int min_speed = 80;
 
-
-
-
-
-  base_speed = 80;  
+  //base_speed = 80;  
   plus_speed = base_speed + pid;
   min_speed = base_speed - pid;
 
-
+  //Check for Higher pid values to get to the line
   if(pid>100){
-    turnRight();
+    turnRight(150);
     delay(250);
   }
-  else if(pid<-100){
-    turnLeft();
+  else if(pid<-150){
+    turnLeft(150);
     delay(250);
   } 
   else{
@@ -272,6 +304,7 @@ int base_speed = 80;
   plus_speed = base_speed + pid;
   min_speed = base_speed - pid;
 
+  //Set maimum and minimum values for pid
   if (base_speed + pid > 250){
     plus_speed =250;    
   }
@@ -288,7 +321,7 @@ int base_speed = 80;
     min_speed =50;  
   }
   } 
-   oled.setTextSize(1);       
+  oled.setTextSize(1);       
   oled.setTextColor(WHITE);
   oled.setCursor(0, 50);     
   oled.print(pid);
@@ -302,6 +335,7 @@ int base_speed = 80;
 }
 
 void pidStraightLineFollower(){
+  floorPattern();
   
   error = 10*( inputVal[3]*6 +inputVal[4]*3 + inputVal[5]*2 - ( + inputVal[8]*6 +inputVal[7]*3 + inputVal[6]*2) ) ; //(2*(inputVal[0]+inputVal[1]+inputVal[2]+inputVal[3]+inputVal[4]+inputVal[5]+inputVal[6]));
 
@@ -313,7 +347,7 @@ void pidStraightLineFollower(){
   d_error = error_list[4] - error_list[3];
 
   i_error = i_error + error;
-  int pid = kp*error + kd*d_error + ki*i_error;  
+  int pid = kpS*error + kdS*d_error + kiS*i_error;  
 
   oled.clearDisplay();
   oled.setTextSize(1);       
@@ -326,54 +360,18 @@ void pidStraightLineFollower(){
   
   oled.display();
 
- int base_speed = 80;  
- int plus_speed = 80;
- int min_speed = 80;
+  int base_speed = 80;  
+  int plus_speed = 80;
+  int min_speed = 80;
 
   //base_speed = 80;  
   plus_speed = base_speed + pid;
   min_speed = base_speed - pid;
 
-/*
-  if(pid>100){
-    turnRight();
-    delay(250);
-  }
-  else if(pid<-100){
-    turnLeft();
-    delay(250);
-  } 
-  else{
-  base_speed = 120;  
-  plus_speed = base_speed + pid;
-  min_speed = base_speed - pid;
-
-  if (base_speed + pid > 250){
-    plus_speed =250;    
-  }
-
-  else if(base_speed - pid > 250){
-    min_speed = 250;
-  }
-
-  if (base_speed + pid < 50){
-    plus_speed = 50;
-  }
-
-  else if (base_speed - pid < 50){
-    min_speed =50;  
-  }
-  }   */
 
   base_speed = 120; 
   plus_speed = base_speed + pid;
   min_speed = base_speed - pid;
-
-  /*if(linePathPattern == "Line"){
-      if((pid> 50) or (pid<-50)){
-          settleLine();
-      }
-  } */
 
   if (base_speed + pid > 250){
     plus_speed =250;    
@@ -436,9 +434,6 @@ void readLineSensors(){
 
             }
             Serial.println();
-              
- 
-
 
             // shift values
             for (int i = 0; i < NUM_SENSORS; i++) {
@@ -474,25 +469,29 @@ void floorPattern(){
             //Detect patterns
             if(not pathCrossing){
                       printToOled(30, linePathPattern);
-                      if((lineSensorCount[0] >2) and (lineSensorCount[1] >2) and (lineSensorCount[2] >2)){
+                      if((lineSensorCount[0] >3) and (lineSensorCount[1] >3) and (lineSensorCount[2] >3)){
                               linePathPattern = "WhiteLine";
                               //forward(50,50);
                               pathCrossing = true;                              
                       }
-                      else if((lineSensorCount[0] <2 ) and (lineSensorCount[1] >=1) and (lineSensorCount[2] < 2 )){
+                     /* else if((lineSensorCount[0] <2 ) and (lineSensorCount[1] >=1) and (lineSensorCount[2] < 2 )){
                               linePathPattern = "Line";
                               //pathCrossing = true;
-                      }
-                      else if((lineSensorCount[0] >2 ) and (lineSensorCount[1] >=1) and (lineSensorCount[2] < 2 )){
+                      } */
+                      else if((lineSensorCount[0] >3 ) and (lineSensorCount[1] >=1) and (lineSensorCount[2] < 2 )){
                               linePathPattern = "HardRightTurn";
                               //forward(50,50);
                               pathCrossing = true;
                       }
-                      //else if((lineSensorCount[0] <2 ) and (lineSensorCount[1] >=1) and (lineSensorCount[2] >2 )){
-                      else{
+                      else if((lineSensorCount[0] <2 ) and (lineSensorCount[1] >=1) and (lineSensorCount[2] >3 )){
+                      //else{
                               linePathPattern = "HardLeftTurn";
                               //forward(50,50);
                               pathCrossing = true;
+                      }
+                      else {
+                              linePathPattern = "Line";
+                              //pathCrossing = true;
                       }
 
             }
@@ -510,7 +509,7 @@ void floorPattern(){
                               readLineSensors();
                       } */
                       
-                      if((lineSensorCount[0] >2) and (lineSensorCount[1] >2) and (lineSensorCount[2] >2)){
+                      if((lineSensorCount[0] >3) and (lineSensorCount[1] >3) and (lineSensorCount[2] >3)){
                               linePathPattern = "WhiteLine";
                               //pathCrossing = true;                              
                       }
@@ -749,10 +748,10 @@ void settleLine(){
     //make adjusments to settle on the line
   printToOled(20,String(MazeError));    
     if (MazeError>10){
-      turnLeft(); 
+      turnLeft(100); 
   }
     else if (MazeError<-10){
-      turnRight(); 
+      turnRight(100); 
   }
    else{
      Stop();
@@ -760,8 +759,7 @@ void settleLine(){
      break;
          
    }
-//}
-}
+  }
 }
 
 int thGoTo(int num){
@@ -796,3 +794,68 @@ int thGoTo(int num){
      } 
      //////////////////////////////////////////////////////////////////////////////////////////////////////////
 }
+
+void turnedAngle(int requiredAngle , char turningDirection){
+
+      int initialAngle = readMagAngle();
+      int destAngle;
+          
+      if(turningDirection == 'R'){
+        destAngle = initialAngle + requiredAngle;
+        if(destAngle>360){
+          destAngle= destAngle-360;
+        }
+        //turnLeft(150);
+        Serial.println("Right");
+      }  
+      else{
+        destAngle = initialAngle - requiredAngle;
+        if(destAngle<0){
+          destAngle= destAngle + 360;
+        }
+        Serial.println("Left");
+        //turnRight(150);
+      }
+      int turnedAngle = 0;
+      while(not ((turnedAngle>destAngle-3) and (turnedAngle<destAngle+3))){
+        turnedAngle = readMagAngle();
+        if(turningDirection == 'L'){
+          turnLeft(150);
+          Serial.println("turning left");
+        }  
+        else{
+          turnRight(150);
+          Serial.println("turning right");
+        }
+      }
+      Stop();
+      Serial.println("Stopped");
+      delay(5000);
+
+}
+
+int readMagAngle(){
+  compass.read();
+	int MAngle = compass.getAzimuth();
+	//delay(100);
+  return MAngle;
+
+}
+
+void thNodeAnalysis(){
+  //floorPattern();
+  pidLineFollower();
+  delay(1000);
+  Stop();
+  delay(1000);
+  leftTurn180();
+  pidLineFollower();
+  delay(800);
+  pidStraightLineFollower();
+}
+
+
+
+
+    
+
