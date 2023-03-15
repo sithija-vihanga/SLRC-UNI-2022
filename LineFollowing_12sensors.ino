@@ -162,38 +162,11 @@ int  i_error = 0;
 
 void loop(){ 
   /////////////////////////////////////////////////////////////////////////
-    int thSector = thCheckOrientation();
-    printToOled(10,String(thMainDirection));
-    printToOled(20,String(a));
-    if(thSector == 0){
-      for(int j =0; j<4; j++){
-            thCurrentJunc[j] = thJunc[thCurrentJuncIndex][j];
-          }
-    }
-    else if(thSector == 1){
-      thLeftShift_90();
-    }
-    else if(thSector == 2){
-      thShift_180();
-    }
-    else if(thSector == 3){
-      thRightShift_90();
-    }
-    
-    oled.clearDisplay(); // clear display
-    oled.setTextSize(1);          // text size
-    oled.setTextColor(WHITE);     // text color
-    oled.setCursor(0, 40);        // position to display
-    for(int k =0 ; k<4; k++){
-      oled.print(String(thCurrentJunc[k]));
-      oled.print(" ");
-    }
-    oled.println(""); // text to display
-    oled.display();               // show on OLED
+    //thUpdateJunction();
 
     ///////////////////////////////////////////////////////////////////////////////////
 
-    //thPathFinder();
+    thPathFinder();
 
 
     //floorPattern();
@@ -665,11 +638,15 @@ void thAutomaticRouting(int num){      //Take the decision at junctions
                   // Write speeds to motors to rotate
                   //delay
                   //thPathFinder()
+
+                  /* /////////////////////////////////////////////////////
                   for(int i =0; i<4; i++){
                     thCurrentJunc[i] = thJunc[thCurrentJuncIndex][i];   //Get the current junction from the list
                   }
                   //Shift according to the direction
-                  
+                  ////////////////////////////////////////////////////////// */
+
+                  thUpdateJunction();
 
                   Serial.println(thArraySearch(num, thCurrentJunc));
                   if(thArraySearch(num,thCurrentJunc) != -1){  //Enter only if num available in the junction data
@@ -720,6 +697,7 @@ void thAutomaticRouting(int num){      //Take the decision at junctions
                               printToOled(10,"Left");
                               leftTurn90();
                               settleLine();
+                              thCurrentJuncIndex++;
                               //delay(1000);
                               //turnLeft
                             }
@@ -738,6 +716,7 @@ void thAutomaticRouting(int num){      //Take the decision at junctions
                             printToOled(10,"Right");
                             rightTurn90();
                             settleLine();
+                            thCurrentJuncIndex++;
                             //delay(1000);
                           }
                       }
@@ -751,6 +730,7 @@ void thAutomaticRouting(int num){      //Take the decision at junctions
                               printToOled(10,"Left");
                               leftTurn90();
                               settleLine();
+                              thCurrentJuncIndex++;
                               //delay(1000);
                               //turnLeft
                             }
@@ -769,6 +749,7 @@ void thAutomaticRouting(int num){      //Take the decision at junctions
                             printToOled(10,"Right");
                             rightTurn90();
                             settleLine();
+                            thCurrentJuncIndex++;
                             //delay(1000);
                           }
                       }
@@ -842,6 +823,20 @@ int thGoTo(int num){
     printToOled(30,String(thCurrentLocation));
      floorPattern();
      if(junctionDetected){
+        ///////////////////////////////////////////////////
+        oled.clearDisplay(); // clear display
+          oled.setTextSize(1);          // text size
+          oled.setTextColor(WHITE);     // text color
+          oled.setCursor(0, 0);        // position to display
+          for(int k =0 ; k<4; k++){
+            oled.print(String(thCurrentJunc[k]));
+            oled.print(" ");
+          }
+          oled.println(""); // text to display
+          oled.display();               // show on OLED
+        ////////////////////////////////////////////////////
+
+
        Stop();
        if(not thDestinationReached){
             //Do the required operation
@@ -987,7 +982,27 @@ int thCheckOrientation(){
 
 }
 
-void
+void thUpdateJunction(){
+        int thSector = thCheckOrientation();
+          printToOled(10,String(thMainDirection));
+          printToOled(20,String(thSector));
+          if(thSector == 0){
+            for(int j =0; j<4; j++){
+                  thCurrentJunc[j] = thJunc[thCurrentJuncIndex][j];
+                }
+          }
+          else if(thSector == 1){
+            thLeftShift_90();
+          }
+          else if(thSector == 2){
+            thShift_180();
+          }
+          else if(thSector == 3){
+            thRightShift_90();
+          }
+          
+         
+}
 
 
 
