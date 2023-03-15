@@ -36,10 +36,15 @@
   bool thDestinationReached = false;
   //int thDirection = 0;
   bool thStarted = true;
-  int thLocationsToMove[4] = {1,32, 3, 5};   //5 means the end of the list
+  int thLocationsToMove[100]  = {0, 0, 0, 0};   //5 means the end of the list
   int thLocationIndex = 0;
   bool thComplete = false;
   int thMainDirection = 0;
+  int thStage = 0;
+  int thUserInput01 = 1; //Change these
+  int thUserInput02 = 1; // Change thses
+
+  int thExploredBoxes[3] = {48, 32, 16}; // 0: largest box 1: middle box 2: Smallest box
   //String thJuncType;
   /////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -165,8 +170,9 @@ void loop(){
     //thUpdateJunction();
 
     ///////////////////////////////////////////////////////////////////////////////////
-
+    
     thPathFinder();
+    printToOled(10,String(thStage));
 
 
     //floorPattern();
@@ -247,20 +253,20 @@ void Stop(){
 void rightTurn90(){
   turnRight(150);
   delay(600);
-  settleLine();
+  settleLine();   //#
   Stop();
 }
 
 void leftTurn90(){
   turnLeft(150);
   delay(600);
-  settleLine();
+  settleLine();  //#
   Stop();
 }
 
 void leftTurn180(){
   turnLeft(150);
-  delay(1200);
+  delay(1500);
   Stop();
 }
 
@@ -442,7 +448,7 @@ void readLineSensors(){
             inputVal[11]  = analogRead(ProxSensor_12);
 
             for (int i = 0; i<12; i++){  //Convert analog inputs to digital
-                    if(inputVal[i]<200){
+                    if(inputVal[i]<500){   //200
                           inputVal[i] = 1;            
                     }
                     else{
@@ -515,7 +521,7 @@ void floorPattern(){
                       }
 
                       else {
-                              linePathPattern = "NULL";
+                              linePathPattern = "Not detected";
                               //pathCrossing = true;
                       }
 
@@ -660,7 +666,7 @@ void thAutomaticRouting(int num){      //Take the decision at junctions
                       Serial.println("Turn Left");
                       printToOled(10,"Left");
                       leftTurn90();
-                      settleLine();
+                      settleLine();   //#
                       //delay(1000);
                     }
                     else if(mainNum == 1){  //not useful
@@ -676,7 +682,7 @@ void thAutomaticRouting(int num){      //Take the decision at junctions
                       Serial.println("Turn Right");
                       printToOled(10,"Right");
                       rightTurn90();
-                      settleLine();
+                      settleLine();  //#
                       
                       //delay(1000);
                     }
@@ -698,7 +704,7 @@ void thAutomaticRouting(int num){      //Take the decision at junctions
                               Serial.println("Turn Left");
                               printToOled(10,"Left");
                               leftTurn90();
-                              settleLine();
+                              settleLine();  //#
                               //thCurrentJuncIndex++;
                               thIncrementJunc();
                               //delay(1000);
@@ -709,7 +715,7 @@ void thAutomaticRouting(int num){      //Take the decision at junctions
                             Serial.println("Forward");
                             printToOled(10,"Forward");
                             forward(150,150);
-                            settleLine();
+                            settleLine(); //#
                             //thCurrentJuncIndex++;    //Change this (update junction)
                             thIncrementJunc();
                             //delay(1000);
@@ -719,7 +725,7 @@ void thAutomaticRouting(int num){      //Take the decision at junctions
                             Serial.println("Turn Right");
                             printToOled(10,"Right");
                             rightTurn90();
-                            settleLine();
+                            settleLine();  //#
                             //thCurrentJuncIndex++;
                             thIncrementJunc();
                             //delay(1000);
@@ -922,7 +928,7 @@ int readMagAngle(){
 void thNodeAnalysis(){
   //floorPattern();
   int nodeCounter = 0;
-  while(nodeCounter<50){
+  while(nodeCounter<23){
       pidStraightLineFollower();
       nodeCounter++;
   }
@@ -932,10 +938,10 @@ void thNodeAnalysis(){
   delay(1000);
   leftTurn180();
   settleLine();
-  while(nodeCounter<50){
-      pidStraightLineFollower();
-      nodeCounter++;
-  }
+  //while(nodeCounter<15){
+  //    pidStraightLineFollower();
+  //    nodeCounter++;
+  //}
   
   //pidStraightLineFollower();
 }
@@ -945,6 +951,7 @@ void thPathFinder(){
   Serial.print("Main angle: ");
   Serial.println(thMainDirection);
   while(not thComplete){
+      thStageManager();
       if(not thDestinationReached){
               thGoTo(thLocationsToMove[thLocationIndex]);
         }
@@ -957,7 +964,13 @@ void thPathFinder(){
             thLocationIndex++;
             if(thLocationsToMove[thLocationIndex]==5){
               printToOled(10,"TH Finished");
-              break;
+              thStage++; // Going to next stage
+              delay(1000);
+              printToOled(20,String(thStage));
+              thDestinationReached = false;  //Update later
+              thLocationIndex = 0;  //go to begining of new list
+              delay(1000);
+              //break;
             }
             thDestinationReached = false;
       }
@@ -1027,6 +1040,37 @@ void thIncrementJunc(){
         thCurrentJuncIndex--;
     }
 }
+
+void thStageManager(){
+      if(thStage == 0){   //0 - Exploration phase
+          thLocationsToMove[0] = 48;
+          thLocationsToMove[1] = 32;
+          thLocationsToMove[2] = 16;
+          thLocationsToMove[3] = 5;
+          //__________________________Update thExplored boxes by node analysis in stage == 0_______________________________
+          thStage++;       // 1 - Idle phase
+      } 
+      else if(thStage == 2){  //2 - Tower of hanoi phase 01 building first tower at user input 01
+          //Run tower of hanoi
+          //Update thLocationsToMove
+          for(int i =0; i<3; i++){   //update moving loctions for bulding the tower
+                        thLocationsToMove[i*2] = thExploredBoxes[i];
+                        thLocationsToMove[i*2+1] = thUserInput01;
+
+          }
+          thLocationsToMove[6] = 5;  //Indicates end of array
+          thStage++;       //3 - Idle stage
+      } 
+
+} 
+
+/*void settleLine(){
+  settleLine();
+  pidStraightLineFollower();
+  delay(500);
+  Stop();
+  settleLine();  
+} */
 
 
 
