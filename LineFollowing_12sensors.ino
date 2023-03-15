@@ -36,7 +36,7 @@
   bool thDestinationReached = false;
   //int thDirection = 0;
   bool thStarted = true;
-  int thLocationsToMove[4] = {1, 16, 3, 5};   //5 means the end of the list
+  int thLocationsToMove[4] = {1,32, 3, 5};   //5 means the end of the list
   int thLocationIndex = 0;
   bool thComplete = false;
   int thMainDirection = 0;
@@ -274,7 +274,8 @@ void forward(int lSpeed,int rSpeed){
 }
 
 void pidLineFollower(){
-  floorPattern();
+  //floorPattern();
+  readLineSensors();
   //Error function
   error = 10*(inputVal[0]*6 +inputVal[1]*5 +inputVal[2]*4 + inputVal[3]*3 +inputVal[4]*2 + inputVal[5] -(inputVal[11]*6 +inputVal[10]*5 +inputVal[9]*4 + inputVal[8]*3 +inputVal[7]*2 + inputVal[6]) ) ; //(2*(inputVal[0]+inputVal[1]+inputVal[2]+inputVal[3]+inputVal[4]+inputVal[5]+inputVal[6]));
 
@@ -352,7 +353,8 @@ void pidLineFollower(){
 }
 
 void pidStraightLineFollower(){
-  floorPattern();
+  //floorPattern();
+  readLineSensors();
   
   error = 10*( inputVal[3]*6 +inputVal[4]*3 + inputVal[5]*2 - ( + inputVal[8]*6 +inputVal[7]*3 + inputVal[6]*2) ) ; //(2*(inputVal[0]+inputVal[1]+inputVal[2]+inputVal[3]+inputVal[4]+inputVal[5]+inputVal[6]));
 
@@ -664,7 +666,7 @@ void thAutomaticRouting(int num){      //Take the decision at junctions
                     else if(mainNum == 1){  //not useful
                       //forward
                       Serial.println("Forward");
-                      printToOled(10,"None");
+                      printToOled(10,"going forward");
                       //forward(150,150);
                       
                       //delay(1000);
@@ -697,7 +699,8 @@ void thAutomaticRouting(int num){      //Take the decision at junctions
                               printToOled(10,"Left");
                               leftTurn90();
                               settleLine();
-                              thCurrentJuncIndex++;
+                              //thCurrentJuncIndex++;
+                              thIncrementJunc();
                               //delay(1000);
                               //turnLeft
                             }
@@ -707,7 +710,8 @@ void thAutomaticRouting(int num){      //Take the decision at junctions
                             printToOled(10,"Forward");
                             forward(150,150);
                             settleLine();
-                            thCurrentJuncIndex++;    //Change this (update junction)
+                            //thCurrentJuncIndex++;    //Change this (update junction)
+                            thIncrementJunc();
                             //delay(1000);
                             }
                             else{
@@ -716,7 +720,8 @@ void thAutomaticRouting(int num){      //Take the decision at junctions
                             printToOled(10,"Right");
                             rightTurn90();
                             settleLine();
-                            thCurrentJuncIndex++;
+                            //thCurrentJuncIndex++;
+                            thIncrementJunc();
                             //delay(1000);
                           }
                       }
@@ -730,7 +735,8 @@ void thAutomaticRouting(int num){      //Take the decision at junctions
                               printToOled(10,"Left");
                               leftTurn90();
                               settleLine();
-                              thCurrentJuncIndex++;
+                              //thCurrentJuncIndex++;
+                              thIncrementJunc();
                               //delay(1000);
                               //turnLeft
                             }
@@ -740,7 +746,8 @@ void thAutomaticRouting(int num){      //Take the decision at junctions
                             printToOled(10,"Forward");
                             forward(150,150);
                             settleLine();
-                            thCurrentJuncIndex++;    //Change this (update junction)
+                            //thCurrentJuncIndex++;    //Change this (update junction)
+                            thIncrementJunc();
                             //delay(1000);
                             }
                             else{
@@ -749,7 +756,8 @@ void thAutomaticRouting(int num){      //Take the decision at junctions
                             printToOled(10,"Right");
                             rightTurn90();
                             settleLine();
-                            thCurrentJuncIndex++;
+                            //thCurrentJuncIndex++;
+                            thIncrementJunc();
                             //delay(1000);
                           }
                       }
@@ -913,14 +921,23 @@ int readMagAngle(){
 
 void thNodeAnalysis(){
   //floorPattern();
-  pidLineFollower();
-  delay(1000);
+  int nodeCounter = 0;
+  while(nodeCounter<50){
+      pidStraightLineFollower();
+      nodeCounter++;
+  }
+  //delay(2000);
+  nodeCounter = 0;
   Stop();
   delay(1000);
   leftTurn180();
-  pidLineFollower();
-  delay(800);
-  pidStraightLineFollower();
+  settleLine();
+  while(nodeCounter<50){
+      pidStraightLineFollower();
+      nodeCounter++;
+  }
+  
+  //pidStraightLineFollower();
 }
 
 void thPathFinder(){
@@ -977,9 +994,6 @@ int thCheckOrientation(){
     }
     return 0; // if not in any sectors
 
-
-
-
 }
 
 void thUpdateJunction(){
@@ -1002,6 +1016,16 @@ void thUpdateJunction(){
           }
           
          
+}
+
+void thIncrementJunc(){
+    int thAllignment = thCheckOrientation();
+    if(thAllignment == 0){
+        thCurrentJuncIndex++;
+    }
+    else if(thAllignment == 2){
+        thCurrentJuncIndex--;
+    }
 }
 
 
