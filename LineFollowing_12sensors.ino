@@ -78,6 +78,28 @@
   int in4 = 6;
 
 
+    
+  int count = 0;
+    
+
+  int error_list[5] = {0,0,0,0,0};  //For both pid and straight line pid functions (Change if necessary)
+
+  //////////   For straight Lines   ///////// //////
+  float kpS = 0.7;
+  float kdS = 0.3;
+  float kiS = 0.0000;
+
+  ////////////  For curved paths   //////////////////
+  float kp = 0.6;
+  float kd = 0.;
+  float ki = 0.0000;
+
+  ////////////// For both curve and straight pids ///////
+  int error = 0;
+  int d_error = 0;
+  int  i_error = 0;
+
+
 
 void setup() 
 {    
@@ -143,25 +165,8 @@ for (int i = 0; i < NUM_SENSORS; i++) {
   //Remove this
   thMainDirection = readMagAngle();
 }
-  int count = 0;
   
 
-int error_list[5] = {0,0,0,0,0};  //For both pid and straight line pid functions (Change if necessary)
-
-//////////   For straight Lines   ///////// //////
-float kpS = 0.5;
-float kdS = 0.2;
-float kiS = 0.0000;
-
-////////////  For curved paths   //////////////////
-float kp = 0.6;
-float kd = 0.;
-float ki = 0.0000;
-
-////////////// For both curve and straight pids ///////
-int error = 0;
-int d_error = 0;
-int  i_error = 0;
 
 
 
@@ -251,22 +256,22 @@ void Stop(){
 }
 
 void rightTurn90(){
-  turnRight(150);
-  delay(600);
+  turnRight(200);
+  delay(680);
   settleLine();   //#
   Stop();
 }
 
 void leftTurn90(){
-  turnLeft(150);
-  delay(600);
+  turnLeft(200);
+  delay(680);
   settleLine();  //#
   Stop();
 }
 
 void leftTurn180(){
-  turnLeft(150);
-  delay(1500);
+  turnLeft(200);
+  delay(1700);
   Stop();
 }
 
@@ -316,11 +321,11 @@ void pidLineFollower(){
 
   //Check for Higher pid values to get to the line
   if(pid>100){
-    turnRight(150);
+    turnRight(200);
     delay(250);
   }
   else if(pid<-150){
-    turnLeft(150);
+    turnLeft(200);
     delay(250);
   } 
   else{
@@ -390,11 +395,11 @@ void pidStraightLineFollower(){
   int min_speed = 80;
 
   //base_speed = 80;  
-  plus_speed = base_speed + pid;
-  min_speed = base_speed - pid;
+  //plus_speed = base_speed + pid;
+ // min_speed = base_speed - pid;
 
 
-  base_speed = 120; 
+  base_speed = 160; 
   plus_speed = base_speed + pid;
   min_speed = base_speed - pid;
 
@@ -817,10 +822,10 @@ void settleLine(){
     //make adjusments to settle on the line
   printToOled(20,String(MazeError));    
     if (MazeError>10){
-      turnLeft(100); 
+      turnLeft(150); 
   }
     else if (MazeError<-10){
-      turnRight(100); 
+      turnRight(150); 
   }
    else{
      Stop();
@@ -903,11 +908,11 @@ void turnedAngle(int requiredAngle , char turningDirection){
       while(not ((turnedAngle>destAngle-3) and (turnedAngle<destAngle+3))){
         turnedAngle = readMagAngle();
         if(turningDirection == 'L'){
-          turnLeft(150);
+          turnLeft(200);
           Serial.println("turning left");
         }  
         else{
-          turnRight(150);
+          turnRight(200);
           Serial.println("turning right");
         }
       }
