@@ -866,7 +866,7 @@ int thGoTo(int num){
          Serial.println("____________Location Reached____________");
          thDestinationReached = true;
          printToOled(30,"Reached");
-         delay(5000);
+         delay(500);
 
        }
        junctionDetected = false;
@@ -913,7 +913,7 @@ void turnedAngle(int requiredAngle , char turningDirection){
       }
       Stop();
       Serial.println("Stopped");
-      delay(5000);
+      delay(500);
 
 }
 
@@ -960,7 +960,7 @@ void thPathFinder(){
             thNodeAnalysis();
             Stop();
             printToOled(10,"moving to next location");
-            delay(5000);
+            delay(500);
             thLocationIndex++;
             if(thLocationsToMove[thLocationIndex]==5){
               printToOled(10,"TH Finished");
@@ -969,7 +969,7 @@ void thPathFinder(){
               printToOled(20,String(thStage));
               thDestinationReached = false;  //Update later
               thLocationIndex = 0;  //go to begining of new list
-              delay(1000);
+              //delay(1000);
               //break;
             }
             thDestinationReached = false;
@@ -1064,13 +1064,7 @@ void thStageManager(){
 
 } 
 
-/*void settleLine(){
-  settleLine();
-  pidStraightLineFollower();
-  delay(500);
-  Stop();
-  settleLine();  
-} */
+
 
 
 
