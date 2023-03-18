@@ -70,12 +70,12 @@
 
   // Motor A connections
   int enA = 2;
-  int in1 = 5;
-  int in2 = 4;
+  int in1 = 39;    //5   
+  int in2 = 37;   //4 
   // Motor B connections
   int enB = 3;
-  int in3 = 7;
-  int in4 = 6;
+  int in3 = 43;     //7
+  int in4 = 41;    //6
 
 
     
@@ -85,8 +85,8 @@
   int error_list[5] = {0,0,0,0,0};  //For both pid and straight line pid functions (Change if necessary)
 
   //////////   For straight Lines   ///////// //////
-  float kpS = 0.7;
-  float kdS = 0.3;
+  float kpS = 0.75;
+  float kdS = 0.55;
   float kiS = 0.0000;
 
   ////////////  For curved paths   //////////////////
@@ -97,137 +97,9 @@
   ////////////// For both curve and straight pids ///////
   int error = 0;
   int d_error = 0;
-  int  i_error = 0;
+  int i_error = 0;
 
-
-
-void setup() 
-{    
-  Serial.begin(9600);           
-  //Initialize magnetometer 
-  compass.init();
-   // initialize OLED display with address 0x3C for 128x64
-  if (!oled.begin(SSD1306_SWITCHCAPVCC, 0x3C)) {
-          Serial.println(F("SSD1306 allocation failed"));
-          while (true);
-  } 
-
-  ///////////////////// floorPattern //////////////////////////
-   
-// initialize sensor values to 0
-for (int i = 0; i < NUM_SENSORS; i++) {
-      for (int j = 0; j < NUM_VALUES; j++) {
-        sensorValues[i][j] = 0;
-      }
-}
-
-  ///////////////////////////////////////////////////////////// 
-
-  
-
-  pinMode(ProxSensor_1,INPUT);    
-  pinMode(ProxSensor_2,INPUT);    
-  pinMode(ProxSensor_3,INPUT);    
-  pinMode(ProxSensor_4,INPUT);
-  pinMode(ProxSensor_5,INPUT);
-  pinMode(ProxSensor_6,INPUT);    
-  pinMode(ProxSensor_7,INPUT);    
-  pinMode(ProxSensor_8,INPUT);    
-  pinMode(ProxSensor_9,INPUT);
-  pinMode(ProxSensor_10,INPUT);
-  pinMode(ProxSensor_11,INPUT);    
-  pinMode(ProxSensor_12,INPUT);    
-
-
-  // Set all the motor control pins to outputs
-	pinMode(enA, OUTPUT);
-	pinMode(enB, OUTPUT);
-	pinMode(in1, OUTPUT);
-	pinMode(in2, OUTPUT);
-	pinMode(in3, OUTPUT);
-	pinMode(in4, OUTPUT);
-	
-	// Turn off motors - Initial state
-	digitalWrite(in1, LOW);
-	digitalWrite(in2, LOW);
-	digitalWrite(in3, LOW);
-	digitalWrite(in4, LOW);
-
-  delay(2000);         // wait for initializing
-  oled.clearDisplay(); // clear display
-
-  oled.setTextSize(1);          // text size
-  oled.setTextColor(WHITE);     // text color
-  oled.setCursor(0, 10);        // position to display
-  oled.println("TEAM SPECTRO"); // text to display
-  oled.display();               // show on OLED
-
-  //Remove this
-  thMainDirection = readMagAngle();
-}
-  
-
-
-
-
-void loop(){ 
-  /////////////////////////////////////////////////////////////////////////
-    //thUpdateJunction();
-
-    ///////////////////////////////////////////////////////////////////////////////////
-    
-    thPathFinder();
-    printToOled(10,String(thStage));
-
-
-    //floorPattern();
-    //readLineSensors();
-    //pidLineFollower();
-    
-    /*delay(1000);
-    rightTurn90();
-    delay(2000);
-    leftTurn90(); */
-    
-    //settleLine();
-    //delay(5000);
-
-    /////////////////////////////////////////////////////////////  
-    /*if(thStarted){
-      thStarted = false;
-      pidLineFollower();
-      delay(1000);
-      pidStraightLineFollower();
-      delay(500);      
-      
-
-
-    }*/
-   /*
-    if(not thDestinationReached){
-           thGoTo(32);
-    }
-   else{   //Change this
-        //pidStraightLineFollower();
-        thNodeAnalysis();
-        
-        //forward(150,150);
-        //delay(2000);
-        //Stop();
-        //delay(100);
-        //leftTurn180();
-        //delay(100);
-        //pidStraightLineFollower();
-        //forward(150,150);
-        //delay(2000); 
-   }   */
-   ////////////////////////////////////////////////// 
-   /*
-   delay(2000);
-   turnedAngle(90,'L'); */
-
-  
-}
+//////////////////////////// Functions //////////////////////////////////
 
 void turnLeft(int turningSpeed){
   analogWrite(enA, turningSpeed);
@@ -257,21 +129,21 @@ void Stop(){
 
 void rightTurn90(){
   turnRight(200);
-  delay(680);
+  delay(500);
   settleLine();   //#
   Stop();
 }
 
 void leftTurn90(){
   turnLeft(200);
-  delay(680);
+  delay(500);
   settleLine();  //#
   Stop();
 }
 
 void leftTurn180(){
   turnLeft(200);
-  delay(1700);
+  delay(1200);
   Stop();
 }
 
@@ -282,6 +154,22 @@ void forward(int lSpeed,int rSpeed){
   digitalWrite(in2, LOW) ;
   digitalWrite(in3, HIGH);
   digitalWrite(in4, LOW) ;
+}
+
+//Function for sorting an array
+void sort(int a[], int len) {
+  for (int i = 0; i < (len - 1); i++) {
+    bool flag = true;
+    for (int o = 0; o < (len - (i + 1)); o++) {
+      if (a[o] > a[o + 1]) {
+        int t = a[o];
+        a[o] = a[o + 1];
+        a[o + 1] = t;
+        flag = false;
+      }
+    }
+    if (flag)break;
+  }
 }
 
 void pidLineFollower(){
@@ -311,7 +199,7 @@ void pidLineFollower(){
   
   oled.display();
 
-  int base_speed = 80;  
+  int base_speed = 180;  
   int plus_speed = 80;
   int min_speed = 80;
 
@@ -329,7 +217,7 @@ void pidLineFollower(){
     delay(250);
   } 
   else{
-  base_speed = 120;  
+  base_speed = 180;  
   plus_speed = base_speed + pid;
   min_speed = base_speed - pid;
 
@@ -399,7 +287,7 @@ void pidStraightLineFollower(){
  // min_speed = base_speed - pid;
 
 
-  base_speed = 160; 
+  base_speed = 130; 
   plus_speed = base_speed + pid;
   min_speed = base_speed - pid;
 
@@ -436,6 +324,126 @@ void pidStraightLineFollower(){
 
 }
 
+
+void readLineSensors(){
+  int tempInputValue_0[3] = {10,10,10};
+  int tempInputValue_1[3] = {10,10,10};
+  int tempInputValue_2[3] = {10,10,10};
+  int tempInputValue_3[3] = {10,10,10};
+  int tempInputValue_4[3] = {10,10,10};
+  int tempInputValue_5[3] = {10,10,10};
+  int tempInputValue_6[3] = {10,10,10};
+  int tempInputValue_7[3] = {10,10,10};
+  int tempInputValue_8[3] = {10,10,10};
+  int tempInputValue_9[3] = {10,10,10};
+  int tempInputValue_10[3] = {10,10,10};
+  int tempInputValue_11[3] = {10,10,10};
+
+  for (int i = 0 ; i < 3 ; i++) {
+    tempInputValue_0[i] = analogRead(ProxSensor_1);
+    tempInputValue_1[i] = analogRead(ProxSensor_2);
+    tempInputValue_2[i] = analogRead(ProxSensor_3);
+    tempInputValue_3[i] = analogRead(ProxSensor_4);
+    tempInputValue_4[i] = analogRead(ProxSensor_5);
+    tempInputValue_5[i] = analogRead(ProxSensor_6);
+    tempInputValue_6[i] = analogRead(ProxSensor_7);
+    tempInputValue_7[i] = analogRead(ProxSensor_8);
+    tempInputValue_8[i] = analogRead(ProxSensor_9);
+    tempInputValue_9[i] = analogRead(ProxSensor_10);
+    tempInputValue_10[i] = analogRead(ProxSensor_11);
+    tempInputValue_11[i] = analogRead(ProxSensor_12);
+  }
+  sort(tempInputValue_0,3);
+  sort(tempInputValue_1,3);
+  sort(tempInputValue_2,3);
+  sort(tempInputValue_3,3);
+  sort(tempInputValue_4,3);
+  sort(tempInputValue_5,3);
+  sort(tempInputValue_6,3);
+  sort(tempInputValue_7,3);
+  sort(tempInputValue_8,3);
+  sort(tempInputValue_9,3);
+  sort(tempInputValue_10,3);
+  sort(tempInputValue_11,3);
+
+  inputVal[0] = tempInputValue_0[2];
+  inputVal[1] = tempInputValue_1[2];
+  inputVal[2] = tempInputValue_2[2];
+  inputVal[3] = tempInputValue_3[2];
+  inputVal[4] = tempInputValue_4[2];
+  inputVal[5] = tempInputValue_5[2];
+  inputVal[6] = tempInputValue_6[2];
+  inputVal[7] = tempInputValue_7[2];
+  inputVal[8] = tempInputValue_8[2];
+  inputVal[9] = tempInputValue_9[2];
+  inputVal[10] = tempInputValue_10[2];
+  inputVal[11] = tempInputValue_11[2];
+
+  for (int i = 0; i<12; i++){  //Convert analog inputs to digital
+       if(inputVal[i]<200){
+          inputVal[i] = 1;            
+        }
+        else{
+            inputVal[i] = 0;
+            }
+           Serial.print(inputVal[i]);
+           Serial.print(" ");
+  
+          }
+  /*    
+   ///////////////////////////////////////////////////////////////////////////////////////////
+  oled.clearDisplay(); // clear display
+  oled.setTextSize(1);          // text size
+  oled.setTextColor(WHITE);     // text color
+  oled.setCursor(0, 50);        // position to display
+  //oled.println(inputVal[6]); // text to display
+  oled.println("Read line sensors");
+  oled.display();               // show on OLED
+  //////////////////////////////////////////////////////////////////////////////////////////
+  */
+  for (int i = 0; i<3; i++){      // for 3 sensor regions
+                  lineSensorCount[i] = 0; //initial Value
+                  for(int j = 0; j<4;  j++){
+                      lineSensorCount[i] += inputVal[4*i+j];
+                  }
+            }  
+}
+
+
+void settleLine(){
+  int MazeError=1;
+  while(!(MazeError==0)){
+  readLineSensors();
+  // if ((inputVal[6]==0)&&(inputVal[7]==0)){
+  //     MazeError=0;
+  //     break;
+  // }
+  MazeError = -200*inputVal[0]-100*inputVal[1]-50*inputVal[2]-10*inputVal[3]-5*inputVal[4]+5*inputVal[7]+10*inputVal[8]+50*inputVal[9]+100*inputVal[10]+200*inputVal[11];
+  
+  // if eror is +, take as robot has turn left(rigt sensors on the line)
+  // considerd when line goes toward the right the eror as positive (robot going out from the line to left)
+  // for positive error robot need to turn right  
+  // for negative error robot need to turn left
+    
+  //if (!((inputVal[6]==0)&&(inputVal[7]==0))){
+    //make adjusments to settle on the line
+  printToOled(20,String(MazeError));    
+    if (MazeError>10){
+      turnLeft(150); 
+  }
+    else if (MazeError<-10){
+      turnRight(150); 
+  }
+   else{
+     Stop();
+     printToOled(10,"Settled");
+     break;
+         
+   }
+  }
+}
+
+ /*
 void readLineSensors(){
             
                           
@@ -465,6 +473,8 @@ void readLineSensors(){
             }
             Serial.println();
 
+            
+
             // shift values
             for (int i = 0; i < NUM_SENSORS; i++) {
                   for (int j = NUM_VALUES - 1; j > 0; j--) {
@@ -481,8 +491,8 @@ void readLineSensors(){
                   for(int j = 0; j<4;  j++){
                       lineSensorCount[i] += inputVal[4*i+j];
                   }
-            }
-}
+            }  
+}   */
 
 void floorPattern(){
             //delay(500);
@@ -520,7 +530,7 @@ void floorPattern(){
                               pathCrossing = true;
                       }
 
-                      else if((lineSensorCount[0] <2 ) and (lineSensorCount[1] >=1) and (lineSensorCount[2] < 2 )){
+                      else if((lineSensorCount[0] <2 ) and (lineSensorCount[1] >=2) and (lineSensorCount[2] < 2 )){
                               linePathPattern = "Line";
                               //pathCrossing = true;
                       }
@@ -533,7 +543,7 @@ void floorPattern(){
             }
             else{
                       pathCrossing = false;
-                      
+                      forward(150,135);  //Change this if needed
                       delay(250);
                       Stop();
                 
@@ -803,38 +813,6 @@ void printToOled(int y, String text){
           oled.display();               // show on OLED
 }
 
-void settleLine(){
-  int MazeError=1;
-  while(!(MazeError==0)){
-  readLineSensors();
-  // if ((inputVal[6]==0)&&(inputVal[7]==0)){
-  //     MazeError=0;
-  //     break;
-  // }
-  MazeError = -200*inputVal[0]-100*inputVal[1]-50*inputVal[2]-10*inputVal[3]-5*inputVal[4]+5*inputVal[7]+10*inputVal[8]+50*inputVal[9]+100*inputVal[10]+200*inputVal[11];
-  
-  // if eror is +, take as robot has turn left(rigt sensors on the line)
-  // considerd when line goes toward the right the eror as positive (robot going out from the line to left)
-  // for positive error robot need to turn right  
-  // for negative error robot need to turn left
-    
-  //if (!((inputVal[6]==0)&&(inputVal[7]==0))){
-    //make adjusments to settle on the line
-  printToOled(20,String(MazeError));    
-    if (MazeError>10){
-      turnLeft(150); 
-  }
-    else if (MazeError<-10){
-      turnRight(150); 
-  }
-   else{
-     Stop();
-     printToOled(10,"Settled");
-     break;
-         
-   }
-  }
-}
 
 int thGoTo(int num){
     ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -1070,8 +1048,131 @@ void thStageManager(){
 } 
 
 
+///////////////////////////////////////////////////////////////////
+
+void setup() {    
+  Serial.begin(9600);           
+  //Initialize magnetometer 
+  compass.init();
+   // initialize OLED display with address 0x3C for 128x64
+  if (!oled.begin(SSD1306_SWITCHCAPVCC, 0x3C)) {
+          Serial.println(F("SSD1306 allocation failed"));
+          while (true);
+  } 
+
+  ///////////////////// floorPattern //////////////////////////
+   
+  // initialize sensor values to 0
+  for (int i = 0; i < NUM_SENSORS; i++) {
+        for (int j = 0; j < NUM_VALUES; j++) {
+          sensorValues[i][j] = 0;
+        }
+  }
+
+  ///////////////////////////////////////////////////////////// 
+
+  
+
+  pinMode(ProxSensor_1,INPUT);    
+  pinMode(ProxSensor_2,INPUT);    
+  pinMode(ProxSensor_3,INPUT);    
+  pinMode(ProxSensor_4,INPUT);
+  pinMode(ProxSensor_5,INPUT);
+  pinMode(ProxSensor_6,INPUT);    
+  pinMode(ProxSensor_7,INPUT);    
+  pinMode(ProxSensor_8,INPUT);    
+  pinMode(ProxSensor_9,INPUT);
+  pinMode(ProxSensor_10,INPUT);
+  pinMode(ProxSensor_11,INPUT);    
+  pinMode(ProxSensor_12,INPUT);    
 
 
+  // Set all the motor control pins to outputs
+	pinMode(enA, OUTPUT);
+	pinMode(enB, OUTPUT);
+	pinMode(in1, OUTPUT);
+	pinMode(in2, OUTPUT);
+	pinMode(in3, OUTPUT);
+	pinMode(in4, OUTPUT);
+	
+	// Turn off motors - Initial state
+	digitalWrite(in1, LOW);
+	digitalWrite(in2, LOW);
+	digitalWrite(in3, LOW);
+	digitalWrite(in4, LOW);
 
+  delay(2000);         // wait for initializing
+  oled.clearDisplay(); // clear display
+
+  oled.setTextSize(1);          // text size
+  oled.setTextColor(WHITE);     // text color
+  oled.setCursor(0, 10);        // position to display
+  oled.println("TEAM SPECTRO"); // text to display
+  oled.display();               // show on OLED
+
+  //Remove this
+  thMainDirection = readMagAngle();
+}
+  
+
+void loop(){ 
+  /////////////////////////////////////////////////////////////////////////
+    //thUpdateJunction();
+
+    ///////////////////////////////////////////////////////////////////////////////////
     
+    thPathFinder();
+    printToOled(10,String(thStage));
 
+
+    //floorPattern();
+    //readLineSensors();
+    //pidLineFollower();
+    
+    /*delay(1000);
+    rightTurn90();
+    delay(2000);
+    leftTurn90(); */
+    
+    //settleLine();
+    //delay(5000);
+
+    /////////////////////////////////////////////////////////////  
+    /*if(thStarted){
+      thStarted = false;
+      pidLineFollower();
+      delay(1000);
+      pidStraightLineFollower();
+      delay(500);      
+      
+
+
+    }*/
+   /*
+    if(not thDestinationReached){
+           thGoTo(32);
+    }
+   else{   //Change this
+        //pidStraightLineFollower();
+        thNodeAnalysis();
+        
+        //forward(150,150);
+        //delay(2000);
+        //Stop();
+        //delay(100);
+        //leftTurn180();
+        //delay(100);
+        //pidStraightLineFollower();
+        //forward(150,150);
+        //delay(2000); 
+   }   */
+   ////////////////////////////////////////////////// 
+   /*
+   delay(2000);
+   turnedAngle(90,'L'); */
+
+  
+}
+
+
+/////////////////////////////////////////////////////////////////
