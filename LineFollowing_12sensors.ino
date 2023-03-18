@@ -2,13 +2,21 @@
   #include <Adafruit_GFX.h>
   #include <Adafruit_SSD1306.h>
   #include <QMC5883LCompass.h>
+  #include <AccelStepper.h>
   QMC5883LCompass compass;
 
   #define SCREEN_WIDTH 128 // OLED display width,  in pixels
   #define SCREEN_HEIGHT 64 // OLED display height, in pixels
   #define NUM_SENSORS 12   //For floor pattern
   #define NUM_VALUES 6   //for floor pattern
+  #define motorPin1  51      // IN1 on the ULN2003 driver
+  #define motorPin2  49      // IN2 on the ULN2003 driver
+  #define motorPin3  47     // IN3 on the ULN2003 driver
+  #define motorPin4  45     // IN4 on the ULN2003 driver
+  // Define the AccelStepper interface type; 4 wire motor in half step mode:
+  #define MotorInterfaceType 8
 
+  AccelStepper stepper = AccelStepper(MotorInterfaceType, motorPin1, motorPin3, motorPin2, motorPin4);
 
   // declare an SSD1306 display object connected to I2C
   Adafruit_SSD1306 oled(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, -1);
@@ -1047,6 +1055,23 @@ void thStageManager(){
 
 } 
 
+void gripperUpAndDown(){
+    // Set target position:
+  stepper.moveTo(-65536);
+  // Run to position with set speed and acceleration:
+  stepper.runToPosition();
+  
+  delay(1000);
+  
+  // Move back to original position:
+  stepper.moveTo(0);
+  // Run to position with set speed and acceleration:
+  stepper.runToPosition();
+  
+  delay(1000);
+
+}
+
 
 ///////////////////////////////////////////////////////////////////
 
@@ -1070,6 +1095,13 @@ void setup() {
   }
 
   ///////////////////////////////////////////////////////////// 
+
+  //////////////////// Gripper ///////////////////////////////
+  // Set the maximum steps per second:
+  stepper.setMaxSpeed(1500);
+  // Set the maximum acceleration in steps per second^2:
+  stepper.setAcceleration(500);
+  ///////////////////////////////////////////////////////////
 
   
 
@@ -1113,17 +1145,33 @@ void setup() {
   //Remove this
   thMainDirection = readMagAngle();
 }
+
+
   
 
 void loop(){ 
   /////////////////////////////////////////////////////////////////////////
-    //thUpdateJunction();
+    /*thUpdateJunction();
+    oled.clearDisplay(); // clear display
+          oled.setTextSize(1);          // text size
+          oled.setTextColor(WHITE);     // text color
+          oled.setCursor(0, 0);        // position to display
+          for(int k =0 ; k<4; k++){
+            oled.print(String(thCurrentJunc[k]));
+            oled.print(" ");
+          }
+          oled.println(""); // text to display
+          oled.display();               // show on OLED
+          */
 
     ///////////////////////////////////////////////////////////////////////////////////
-    
+    //Serial.println("Started");
+    //int a = readMagAngle();
+    //printToOled(10,String(a));
+    //Serial.println(a);
     thPathFinder();
-    printToOled(10,String(thStage));
-
+    //printToOled(10,String(thStage));
+    //gripperUpAndDown();
 
     //floorPattern();
     //readLineSensors();
