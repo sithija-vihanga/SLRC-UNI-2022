@@ -1,3 +1,11 @@
+#include <Wire.h>
+#include <Adafruit_GFX.h>
+#include <Adafruit_SSD1306.h>
+//#include <HCSR04.h>//old sonic sensor library
+#include <Wire.h>
+#include <Adafruit_Sensor.h>
+//#include <Adafruit_HMC5883L.h> check wether it is possible to include this(magnatometer library)
+#include <NewPing.h>
 ////////////////////////////////pins//////////////////////////////
 #define S0_PIN_box 9
 #define S1_PIN_box 10
@@ -11,8 +19,27 @@
 #define S3_PIN_floor 6
 #define OUT_PIN_floor  8
 
+
+
+#define SCREEN_WIDTH 128 // OLED display width,  in pixels
+#define SCREEN_HEIGHT 64 // OLED display height, in pixels
+
+
+// declare an SSD1306 display object connected to I2C
+Adafruit_SSD1306 oled(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, -1);
+
 void setup()
 {
+
+    //Initialize magnetometer 
+  //compass.init();
+   // initialize OLED display with address 0x3C for 128x64
+  if (!oled.begin(SSD1306_SWITCHCAPVCC, 0x3C)) {
+          Serial.println(F("SSD1306 allocation failed"));
+          while (true);
+  }
+
+      
   // Set the S0, S1, S2, S3 Pins as Output
   pinMode(S0_PIN_floor, OUTPUT);
   pinMode(S1_PIN_floor, OUTPUT);
@@ -32,12 +59,29 @@ void setup()
   digitalWrite(S0_PIN_box, HIGH);
   digitalWrite(S1_PIN_box, LOW);
   // Enabl UART for Debugging
+
+    // Enabl UART for Debugging
+  
+    delay(2000);         // wait for initializing
+  oled.clearDisplay(); // clear display
+  oled.setTextSize(1);          // text size
+  oled.setTextColor(WHITE);     // text color
+  oled.setCursor(0, 10);        // position to display
+  oled.println("TEAM SPECTRO"); // text to display
+  oled.display();               // show on OLED
   Serial.begin(9600);
 }
 void loop()
 {
-  String colorBox = FindColorBox();////////////////////////////check color//////////////////////
-  //String colorFloor = FindColorFloor();////////////////////////////check color//////////////////////
+ // String colorBox = FindColorBox();////////////////////////////check color//////////////////////
+  String colorFloor = FindColorFloor();////////////////////////////check color//////////////////////
+  oled.clearDisplay();
+  oled.setTextSize(1);      
+  oled.setTextColor(WHITE); 
+  //oled.println("Team Spectro");
+  oled.setCursor(0, 10);    
+  oled.print(colorFloor); 
+  oled.display();
 }
 
 ////////////////////////////////////fun 1 ///////////////////
@@ -123,22 +167,42 @@ String FindColorFloor(){
   Serial.print(b);
   Serial.print(" ");
   Serial.println();
-  if ((b < 1700))
+  //////////////////////////////////////////////
+//    oled.clearDisplay();
+//  oled.setTextSize(1);      
+//  oled.setTextColor(WHITE); 
+//  //oled.println("Team Spectro");
+//  oled.setCursor(0, 30);    
+//  oled.print(r);
+//  oled.print(" ");
+//   oled.print(g);
+//    oled.print(" ");
+//    oled.print(b);
+//     oled.println(" "); 
+//  oled.display();
+  ////////////////////////////////////////////
+  if((r<600)&&(g<600)&&(b<600)){
+    color = "Colour white";
+  }
+  else{
+  if ((b < 700)&&(r>1000))
   {
     Serial.println("F Colour Blue");
     color = "Colour Blue";
   }
-  else if ((b > 2000)&&(g <2200))
-  {
-    Serial.println("F Colour Green");
-    color = "Colour Green";
-  }
-  else if (r < 2800)
+
+  else if (r < 750)
   {
     Serial.println("F Colour Red");
     color = "Colour Red";
   }
+    else if ((b < 1000)&&(g <1000))
+  {
+    Serial.println("F Colour Green");
+    color = "Colour Green";
+  }
   return(color);
+}
 }
 
 ////////////////////////////////////fun 2 ///////////////////
