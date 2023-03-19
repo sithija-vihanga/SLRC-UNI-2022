@@ -55,7 +55,7 @@
   int thPlacingTheBox = 0;
 
   int thExploredBoxes[3] = {48, 32, 16}; // 0: largest box 1: middle box 2: Smallest box
-  int thGripperCommands[10][3] = {{0,5,1},{1,6,2},{0,4,2},{2,6,2}};                     // vertical position :: gripper position :: vertical position
+  int thGripperCommands[10][3] = {{0,5,1},{0,6,2},{0,4,2},{1,6,2},{0,3,2},{2,6,2}};                     // vertical position :: gripper position :: vertical position
   int thGripperCommandCounter = 0;
     //String thJuncType;
   /////////////////////////////////////////////////////////////////////////////////////////////
@@ -97,7 +97,7 @@
   int error_list[5] = {0,0,0,0,0};  //For both pid and straight line pid functions (Change if necessary)
 
   //////////   For straight Lines   ///////// //////
-  float kpS = 0.6;
+  float kpS = 0.55;
   float kdS = 0.3;
   float kiS = 0.0000;
 
@@ -299,7 +299,7 @@ void pidStraightLineFollower(){
  // min_speed = base_speed - pid;
 
 
-  base_speed = 140; 
+  base_speed = 130; 
   plus_speed = base_speed + pid;
   min_speed = base_speed - pid;
 
@@ -923,7 +923,7 @@ int readMagAngle(){
 void thNodeAnalysis(){
   //floorPattern();
   int nodeCounter = 0;
-  while(nodeCounter<23){
+  while(nodeCounter<28){
       pidStraightLineFollower();
       nodeCounter++;
   }
@@ -934,11 +934,11 @@ void thNodeAnalysis(){
   if(thStage==3){  
       //if(thPlacingTheBox == 0){   //lifting the box when 0
           moveVerticalGripper(thGripperCommands[thGripperCommandCounter][0]);
-          delay(1500);
+          delay(2000);
           horizontalGripper(thGripperCommands[thGripperCommandCounter][1]);
           delay(1000);
           moveVerticalGripper(thGripperCommands[thGripperCommandCounter][2]);
-          delay(1500);
+          delay(2000);
           thGripperCommandCounter ++;          
      // }
       /*else if(thPlacingTheBox == 1){   //placing the box when 1
