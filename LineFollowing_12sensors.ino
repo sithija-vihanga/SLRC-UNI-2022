@@ -3,6 +3,7 @@
   #include <Adafruit_SSD1306.h>
   #include <QMC5883LCompass.h>
   #include <AccelStepper.h>
+  #include <Servo.h>
   QMC5883LCompass compass;
 
   #define SCREEN_WIDTH 128 // OLED display width,  in pixels
@@ -17,7 +18,7 @@
   #define MotorInterfaceType 8
 
   AccelStepper stepper = AccelStepper(MotorInterfaceType, motorPin1, motorPin3, motorPin2, motorPin4);
-
+  Servo Gripper;
   // declare an SSD1306 display object connected to I2C
   Adafruit_SSD1306 oled(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, -1);
 
@@ -51,9 +52,12 @@
   int thStage = 0;
   int thUserInput01 = 1; //Change these
   int thUserInput02 = 1; // Change thses
+  int thPlacingTheBox = 0;
 
   int thExploredBoxes[3] = {48, 32, 16}; // 0: largest box 1: middle box 2: Smallest box
-  //String thJuncType;
+  int thGripperCommands[10][3] = {{0,5,1},{1,6,2},{0,4,2},{2,6,2}};                     // vertical position :: gripper position :: vertical position
+  int thGripperCommandCounter = 0;
+    //String thJuncType;
   /////////////////////////////////////////////////////////////////////////////////////////////
 
   ///////////////////////////// IR sensor pins /////////////////////////////////////////////
@@ -93,8 +97,8 @@
   int error_list[5] = {0,0,0,0,0};  //For both pid and straight line pid functions (Change if necessary)
 
   //////////   For straight Lines   ///////// //////
-  float kpS = 0.75;
-  float kdS = 0.55;
+  float kpS = 0.6;
+  float kdS = 0.3;
   float kiS = 0.0000;
 
   ////////////  For curved paths   //////////////////
@@ -262,8 +266,8 @@ void pidLineFollower(){
 void pidStraightLineFollower(){
   //floorPattern();
   readLineSensors();
-  
-  error = 10*( inputVal[3]*6 +inputVal[4]*3 + inputVal[5]*2 - ( + inputVal[8]*6 +inputVal[7]*3 + inputVal[6]*2) ) ; //(2*(inputVal[0]+inputVal[1]+inputVal[2]+inputVal[3]+inputVal[4]+inputVal[5]+inputVal[6]));
+  //2 3 6
+  error = 10*( inputVal[3]*6 +inputVal[4]*4 + inputVal[5]*2 - ( + inputVal[8]*6 +inputVal[7]*4 + inputVal[6]*2) ) ; //(2*(inputVal[0]+inputVal[1]+inputVal[2]+inputVal[3]+inputVal[4]+inputVal[5]+inputVal[6]));
 
   for (int i = 0; i<4 ; i++){
     error_list[i] = error_list[i+1];
@@ -295,7 +299,7 @@ void pidStraightLineFollower(){
  // min_speed = base_speed - pid;
 
 
-  base_speed = 130; 
+  base_speed = 140; 
   plus_speed = base_speed + pid;
   min_speed = base_speed - pid;
 
@@ -927,8 +931,36 @@ void thNodeAnalysis(){
   nodeCounter = 0;
   Stop();
   delay(1000);
+  if(thStage==3){  
+      //if(thPlacingTheBox == 0){   //lifting the box when 0
+          moveVerticalGripper(thGripperCommands[thGripperCommandCounter][0]);
+          delay(1500);
+          horizontalGripper(thGripperCommands[thGripperCommandCounter][1]);
+          delay(1000);
+          moveVerticalGripper(thGripperCommands[thGripperCommandCounter][2]);
+          delay(1500);
+          thGripperCommandCounter ++;          
+     // }
+      /*else if(thPlacingTheBox == 1){   //placing the box when 1
+          moveVerticalGripper(1);
+          delay(1500);
+          horizontalGripper(6);
+          delay(1000);
+          moveVerticalGripper(2);
+          delay(1500);
+
+     */ } 
+  /*thPlacingTheBox++;
+  if(thPlacingTheBox>1){
+    thPlacingTheBox = 0;
+    }
+  } */
+
   leftTurn180();
   settleLine();
+  
+  
+  
   //while(nodeCounter<15){
   //    pidStraightLineFollower();
   //    nodeCounter++;
@@ -941,6 +973,11 @@ void thPathFinder(){
   thMainDirection = readMagAngle();
   Serial.print("Main angle: ");
   Serial.println(thMainDirection);
+  moveVerticalGripper(2); //change later
+  delay(1500);
+  horizontalGripper(6);    //reset positions of the gripper
+  delay(1000);
+
   while(not thComplete){
       thStageManager();
       if(not thDestinationReached){
@@ -1055,28 +1092,49 @@ void thStageManager(){
 
 } 
 
-void gripperUpAndDown(){
-    // Set target position:
-  stepper.moveTo(-65536);
-  // Run to position with set speed and acceleration:
-  stepper.runToPosition();
-  
-  delay(1000);
-  
-  // Move back to original position:
-  stepper.moveTo(0);
-  // Run to position with set speed and acceleration:
-  stepper.runToPosition();
-  
-  delay(1000);
 
+void moveVerticalGripper(int pos){  
+    int upDownGripperLocation = 0;
+    if(pos==0){
+          upDownGripperLocation = 0;
+    }     
+    else if(pos == 1){
+          upDownGripperLocation = -2000;
+    }
+    else if(pos == 2){
+          upDownGripperLocation = -4000;
+    }
+    stepper.moveTo(upDownGripperLocation);  //-4000 maximum height and 0 is minimum height 0
+    stepper.runToPosition();
 }
+
+
+void horizontalGripper(int pos){
+  if (pos==6){
+    Gripper.write(180);
+    delay(200);
+  }
+  else if (pos==5){
+    Gripper.write(105);
+    delay(200);
+  }
+  else if (pos==4){
+    Gripper.write(55);
+    delay(200);
+  }
+  else if (pos==3){
+    Gripper.write(5);
+    delay(200);
+  }
+}
+
 
 
 ///////////////////////////////////////////////////////////////////
 
 void setup() {    
-  Serial.begin(9600);           
+  Serial.begin(9600);    
+  Gripper.attach(53); //servo gripper         
   //Initialize magnetometer 
   compass.init();
    // initialize OLED display with address 0x3C for 128x64
@@ -1170,6 +1228,19 @@ void loop(){
     //printToOled(10,String(a));
     //Serial.println(a);
     thPathFinder();
+
+    /*moveVerticalGripper(1);
+    delay(2000);
+    moveVerticalGripper(2);
+    delay(2000);
+    moveVerticalGripper(0);
+    delay(2000);*/
+
+    /*horizontalGripper(5);
+    delay(2000);
+    horizontalGripper(6);
+    delay(2000);*/
+
     //printToOled(10,String(thStage));
     //gripperUpAndDown();
 
