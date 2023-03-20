@@ -61,7 +61,9 @@ int MZturn90=40;// used to turn 90
 int MZrotatedAngle=0;
 
 String MZfloorColor = " ";//color of the floor
-String MZjunctionType=" ";//TLR for T mode one junction /// TR - right T junction // TL - left T junction;// CROSS - cross junction 
+String MZjunctionType = " ";//TLR for T mode one junction /// TR - right T junction // TL - left T junction;// CROSS - cross junction 
+bool MZinJunction=false;//inside a function
+int MZamountOfPath=0;//paths need to check
 
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -167,8 +169,8 @@ void runExtraInch(void)
 
 void goAndTurn( int Degrees){
   if( Degrees==270){
-  analogWrite(enA, 200);
-  analogWrite(enB, 200);
+  analogWrite(enA, 180);
+  analogWrite(enB, 180);
   digitalWrite(in1, HIGH);
   digitalWrite(in2, LOW) ;
   digitalWrite(in3, LOW);
@@ -176,8 +178,8 @@ void goAndTurn( int Degrees){
   delay(720);
   }
   if( Degrees==180){
-  analogWrite(enA, 200);
-  analogWrite(enB, 200);
+  analogWrite(enA, 180);
+  analogWrite(enB, 180);
   digitalWrite(in1, LOW);
   digitalWrite(in2, HIGH) ;
   digitalWrite(in3, HIGH);
@@ -185,8 +187,8 @@ void goAndTurn( int Degrees){
   delay(1500);
   }
   if( Degrees==90){
-  analogWrite(enA, 200);
-  analogWrite(enB, 200);
+  analogWrite(enA, 180);
+  analogWrite(enB, 180);
   digitalWrite(in1, LOW);
   digitalWrite(in2, HIGH) ;
   digitalWrite(in3, HIGH);
@@ -322,10 +324,10 @@ void readLFSsensors()
   else if((inputVal[2]==1)&&(inputVal[3]==1)&&(inputVal[4]==1)&&(inputVal[5]==1)&&(inputVal[6]==1)&&(inputVal[7]==1)&&(inputVal[8]==1)&&(inputVal[9]==1)){
     mode = 'c';//cross line
   }
-  else if(((inputVal[2]==0)&&(inputVal[1]==0)&&(inputVal[10]==1)&&(inputVal[9]==1))&&((inputVal[3]==1)||(inputVal[4]==1)||(inputVal[5]==1)||(inputVal[6]==1)||(inputVal[7]==1)||(inputVal[8]==1))){
+  else if(((inputVal[2]==0)&&((inputVal[1]==0)||(inputVal[0]==0))&&((inputVal[10]==1)||(inputVal[11]==1))&&(inputVal[9]==1))&&((inputVal[3]==1)||(inputVal[4]==1)||(inputVal[5]==1)||(inputVal[6]==1)||(inputVal[7]==1)||(inputVal[8]==1))){
     mode = 'l';//Right line Turn (w r t robot)
   }
-  else if(((inputVal[2]==1)&&(inputVal[1]==1)&&(inputVal[10]==0)&&(inputVal[9]==0))&&((inputVal[3]==1)||(inputVal[4]==1)||(inputVal[5]==1)||(inputVal[6]==1)||(inputVal[7]==1)||(inputVal[8]==1))){
+  else if(((inputVal[2]==1)&&((inputVal[1]==1)||(inputVal[0]==1))&&((inputVal[11]==0)||(inputVal[10]==0))&&(inputVal[9]==0))&&((inputVal[3]==1)||(inputVal[4]==1)||(inputVal[5]==1)||(inputVal[6]==1)||(inputVal[7]==1)||(inputVal[8]==1))){
     mode = 'r';//Left line Turn (w r t robot)
   }
   else{
@@ -442,7 +444,7 @@ void settleLine(){
         //turnLeft(200);
         //delay(110);
         go(60,200);
-        go(60,200);
+        //go(60,200);
         //motorStop();
         //delay(100);
   }
@@ -450,7 +452,7 @@ void settleLine(){
       //turnRight(200);
       //delay(110);
       go(200,60);
-      go(200,60);
+      //go(200,60);
       //motorStop();
       //delay(100);
       
@@ -583,6 +585,8 @@ void linefollow(){
 }
 
 void mazeSolve(void)
+
+
 {           oled.setTextSize(1);       
             oled.setTextColor(WHITE);
             oled.setCursor(0, 40);    
@@ -591,7 +595,8 @@ void mazeSolve(void)
             oled.display();
              
 //       go(140,140);
-              
+
+         
        if (mode=='n')
         {   
 
@@ -602,14 +607,15 @@ void mazeSolve(void)
             delay(500);
             settleLine();
             //lineFollow();
-
+            if(MZinJunction){
+                MZamountOfPath--;               
+              } 
             recIntersection('B');
         }
             
           
          else if(mode== 'c'){
-                       
-           
+                                 
             motorStop();
             //delay(500);
             //runExtraInch();
@@ -636,31 +642,147 @@ void mazeSolve(void)
             delay(200);
             settleLine();
             recIntersection('B');
+            if(MZinJunction){
+                
+                MZamountOfPath--;
+                
+              }
             
            }
 
            else if(MZfloorColor=="Colour Red"){//end of the Maze
             //goAndTurn (180);
+            if(MZinJunction){
+                goAndTurn (180);
+                motorStop();
+                delay(500);
+                settleLine();
+                MZamountOfPath--;
+                
+                recIntersection('B');
+              }
+              else{
             motorStop();
             delay(10000);
             //settleLine();
             //recIntersection('B');
-            
+           } 
            }
            else if(MZfloorColor=="Colour Green"){
+            if(MZinJunction){
+                MZamountOfPath--;              
+              }           
             goAndTurn (180);
             motorStop();
             delay(200);
             settleLine();
-            recIntersection('B');
+            recIntersection('B');          
            }
            
         else{
           if(mode=='n'){
-            MZjunctionType="TLR";
+            
+            if(MZinJunction){
+              if (MZamountOfPath==0){
+                  motorStop();                 
+                  oled.clearDisplay();
+                  oled.setTextSize(1);      
+                  oled.setTextColor(WHITE);
+                  oled.setCursor(0, 20);   
+                  //oled.println("Team Spectro");
+                  oled.setCursor(0, 30);    
+                  oled.print("Junction Solved TLR");   
+                  oled.display();
+                  delay(5000);
+                  MZinJunction=false;                                    
+                }
+                else if((MZamountOfPath==1)&&( MZjunctionType="TL")){ 
+//                go(140,140);
+//                go(140,140);
+                goAndTurn (270);
+                motorStop();
+                delay(500);
+                settleLine();
+                //MZamountOfPath--;
+                //recIntersection('R');
+                }
+                else if((MZamountOfPath==1)&&( MZjunctionType="TR")){ 
+//                go(140,140);
+//                go(140,140);
+                goAndTurn (90);
+                motorStop();
+                delay(500);
+                settleLine();
+                //MZamountOfPath--;
+                //recIntersection('R');
+                }
+                else if(MZamountOfPath<0){
+                goAndTurn (180);
+                motorStop();
+                delay(500);
+                settleLine();
+                MZamountOfPath--;
+                
+                recIntersection('B');
+              }
+            }
+              else{
+              goAndTurn (90);
+              motorStop();
+              delay(500);
+              settleLine();              
+              recIntersection('R');
+              MZjunctionType="TLR";
+              MZamountOfPath=2;
+              MZinJunction=true;
+              
+          }
           }
           else if(mode=='f'){
-            MZjunctionType="CROSS";
+            if(MZinJunction){
+              if (MZamountOfPath==0){
+                  motorStop();                 
+                  oled.clearDisplay();
+                  oled.setTextSize(1);      
+                  oled.setTextColor(WHITE);
+                  oled.setCursor(0, 20);   
+                  //oled.println("Team Spectro");
+                  oled.setCursor(0, 30);    
+                  oled.print("Junction Solved Cross");   
+                  oled.display();
+                  delay(5000);
+                  MZinJunction=false;                                    
+                }
+                else if((MZamountOfPath==2)||(MZamountOfPath==1)){ 
+//                go(140,140);
+//                go(140,140);
+                goAndTurn (90);
+                motorStop();
+                delay(500);
+                settleLine();
+                //MZamountOfPath--;
+                //recIntersection('R');
+                }
+                else if(MZamountOfPath<0){
+                goAndTurn (180);
+                motorStop();
+                delay(500);
+                settleLine();
+                MZamountOfPath--;
+                
+                recIntersection('B');
+              }
+            }
+              else{
+              goAndTurn (90);
+              motorStop();
+              delay(500);
+              settleLine();             
+              recIntersection('R');
+              MZjunctionType="CROSS";
+              MZamountOfPath=3;
+              MZinJunction=true;
+          }
           }
           
             //if ((strtrted==0)){
@@ -698,12 +820,40 @@ void mazeSolve(void)
               recIntersection('R');
               }
             else {
+              if(MZinJunction){
+
+                if (MZamountOfPath==0){
+                  motorStop();                 
+                  oled.clearDisplay();
+                  oled.setTextSize(1);      
+                  oled.setTextColor(WHITE);
+                  oled.setCursor(0, 20);   
+                  //oled.println("Team Spectro");
+                  oled.setCursor(0, 30);    
+                  oled.print("Junction Solved TR");   
+                  oled.display();
+                  delay(5000);
+                  MZinJunction=false;                                    
+                }
+                else if(MZamountOfPath<0){
+                goAndTurn (180);
+                motorStop();
+                delay(500);
+                settleLine();
+                MZamountOfPath--;
+                recIntersection('B');
+              }
+              }
+              else{
               goAndTurn (90);
               motorStop();
               delay(500);
               settleLine();
-            recIntersection('R');
-            MZjunctionType="TR";
+              recIntersection('R');
+              MZjunctionType="TR";
+              MZamountOfPath=2;
+              MZinJunction=true;
+              }
          } 
          } 
             
@@ -727,12 +877,53 @@ void mazeSolve(void)
               recIntersection('L');
               }
             else {
-              goAndTurn (270);
-              motorStop();
-              delay(500);
-              settleLine();
-            recIntersection('L');
-            MZjunctionType="TL";
+                if(MZinJunction){
+                 if (MZamountOfPath==0){
+                  motorStop();
+                  
+                  oled.clearDisplay();
+                  oled.setTextSize(1);      
+                  oled.setTextColor(WHITE);
+                  oled.setCursor(0, 20);   
+                  //oled.println("Team Spectro");
+                  oled.setCursor(0, 30);    
+                  oled.print("Junction Solved TL");   
+                  oled.display();
+                  delay(5000);
+                  MZinJunction=false;
+                  
+                  
+                }
+                else if((MZamountOfPath==1)&&( MZjunctionType="TLR")){ 
+                go(140,140);
+                go(140,140);
+                //goAndTurn (90);
+                //motorStop();
+                //delay(500);
+                settleLine();
+                //MZamountOfPath--;
+                //recIntersection('R');
+                }
+                else if(MZamountOfPath>0){ 
+                goAndTurn (180);
+                motorStop();
+                delay(500);
+                settleLine();
+                MZamountOfPath--;
+                recIntersection('B');
+                }
+                
+                }
+                else{
+                goAndTurn (270);
+                motorStop();
+                delay(500);
+                settleLine();
+                recIntersection('L');
+                MZjunctionType="TL";
+                MZamountOfPath=2;
+                MZinJunction=true;
+                }
          } 
          }   
          
@@ -987,6 +1178,7 @@ void loop(){
 ///////////////////////////////////////////////////////////////////////////////////  
 ///////////////////////////////////////////////////////////////////////////////////
   readLFSsensors(); 
+ 
   if (mode=='c'||mode=='r'||mode=='l'||mode=='n'){
     //motorStop();
     go(150,150);
