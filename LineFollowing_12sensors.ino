@@ -4,16 +4,33 @@
   #include <QMC5883LCompass.h>
   #include <AccelStepper.h>
   #include <Servo.h>
+  #include <HCSR04.h>
+  #include <Adafruit_Sensor.h>
   QMC5883LCompass compass;
 
   #define SCREEN_WIDTH 128 // OLED display width,  in pixels
   #define SCREEN_HEIGHT 64 // OLED display height, in pixels
   #define NUM_SENSORS 12   //For floor pattern
   #define NUM_VALUES 6   //for floor pattern
+  
   #define motorPin1  51      // IN1 on the ULN2003 driver
   #define motorPin2  49      // IN2 on the ULN2003 driver
   #define motorPin3  47     // IN3 on the ULN2003 driver
   #define motorPin4  45     // IN4 on the ULN2003 driver
+
+  #define S0_PIN_box 9
+  #define S1_PIN_box 10
+  #define S2_PIN_box 11
+  #define S3_PIN_box 12
+  #define OUT_PIN_box  13
+
+  #define S0_PIN_floor 5
+  #define S1_PIN_floor 4
+  #define S2_PIN_floor 7
+  #define S3_PIN_floor 6
+  #define OUT_PIN_floor  8
+
+
   // Define the AccelStepper interface type; 4 wire motor in half step mode:
   #define MotorInterfaceType 8
 
@@ -30,6 +47,31 @@
   bool pathCrossing = false;
   int sensorValues[NUM_SENSORS][NUM_VALUES];  // For 12 line sensors to store 10 previous values
   int lineSensorCount[3] = {0, 0, 0} ;
+
+  ///////////////////////// ultrasonic sensors ////////////////////////////
+  int REFERENCE_DISTANCE=10;
+  float distance1,error1,error2,errorD1,errorD2,previous_errorD1,previous_errorD2,integral1,integral2,derivative1,derivative2,error3,error4,PID_ErrorD1,PID_ErrorD2;
+  float ultrasonic_distance[7];
+  int left_motor_speed,right_motor_speed,initial_speed=110,MAX_SPEED=225,MIN_SPEED=80;
+  float ultrasonic_list1[5];
+
+  //ultrasonic sensors
+  const int trigPin1 = 27;//distance1
+  const int echoPin1 = 26;
+  const int trigPin2 = 29;//distance2
+  const int echoPin2 = 28;
+  const int trigPin3 = 31;//distance3
+  const int echoPin3 = 30;
+  const int trigPin4 = 23;//distance4
+  const int echoPin4 = 22;
+  const int trigPin5 = 25;//distance5
+  const int echoPin5 = 24;
+  const int trigPin6 = 33;//distance6
+  const int echoPin6 = 32;
+  const int trigPin7 = 35;//distance6
+  const int echoPin7 = 34;
+
+
   ///////////////////////////////////////////////////////////////////////
 
   ////////////////////////////// Tower of hanoi ///////////////////////////////////////////
@@ -53,9 +95,9 @@
   int thUserInput01 = 1; //Change these
   int thUserInput02 = 1; // Change thses
   int thPlacingTheBox = 0;
-
-  int thExploredBoxes[3] = {48, 32, 16}; // 0: largest box 1: middle box 2: Smallest box
-  int thGripperCommands[10][3] = {{0,5,1},{0,6,2},{0,4,2},{1,6,2},{0,3,2},{2,6,2}};                     // vertical position :: gripper position :: vertical position
+h
+  int thExploredBoxes[3] = {32, 48, 16}; // 0: largest box 1: middle box 2: Smallest box
+  int thGripperCommands[10][3] = {{0,5,2},{0,6,2},{0,4,2},{1,6,2},{0,3,2},{2,6,2}};    //5 6 4 6 3 6                  // vertical position :: gripper position :: vertical position
   int thGripperCommandCounter = 0;
     //String thJuncType;
   /////////////////////////////////////////////////////////////////////////////////////////////
@@ -112,6 +154,168 @@
   int i_error = 0;
 
 //////////////////////////// Functions //////////////////////////////////
+String FindColorBox(){
+  int r, g, b;
+  String color = " ";
+  r = process_red_value_Box();
+  delay(200);
+  g = process_green_value_Box();
+  delay(200);
+  b = process_blue_value_Box();
+  delay(200);
+  Serial.print("r = ");
+  Serial.print(r);
+  Serial.print(" ");
+  Serial.print("g = ");
+  Serial.print(g);
+  Serial.print(" ");
+  Serial.print("b = ");
+  Serial.print(b);
+  Serial.print(" ");
+  Serial.println();
+
+    //////////////////////////////////////////////
+    oled.clearDisplay();
+  oled.setTextSize(1);      
+  oled.setTextColor(WHITE); 
+  //oled.println("Team Spectro");
+  oled.setCursor(0, 30);    
+  oled.print(r);
+  oled.print(" ");
+   oled.print(g);
+    oled.print(" ");
+    oled.print(b);
+     oled.println(" "); 
+  oled.display();
+  ////////////////////////////////////////////
+    if ((b < 55)&&(r>75))
+  {
+    Serial.println("B Colour Blue");
+    color = "Blue";
+  }
+   else if((g < 70)&&(b<70))
+  {
+    Serial.println("B Colour Green");
+    color = "Green";
+  }
+
+
+    else if (r < 62)
+  {
+    Serial.println("B Colour Red");
+    color = "Red";
+  }
+ 
+  return(color);
+}
+
+////////////////////////////////////fun 2 ///////////////////
+int process_red_value_Box(){
+  digitalWrite(S2_PIN_box, LOW);
+  digitalWrite(S3_PIN_box, LOW);
+  int pulse_length = pulseIn(OUT_PIN_box, LOW);
+  return pulse_length;
+}
+
+////////////////////////////////////fun 3 ///////////////////
+int process_green_value_Box(){
+  digitalWrite(S2_PIN_box, HIGH);
+  digitalWrite(S3_PIN_box, HIGH);
+  int pulse_length = pulseIn(OUT_PIN_box, LOW);
+  return pulse_length;
+}
+////////////////////////////////////fun 4 ///////////////////
+int process_blue_value_Box(){
+  digitalWrite(S2_PIN_box, LOW);
+  digitalWrite(S3_PIN_box, HIGH);
+  int pulse_length = pulseIn(OUT_PIN_box, LOW);
+  return pulse_length;
+}
+
+
+void selectionSort(float arr[], int n) {
+  for (int i = 0; i < n-1; i++) {
+    int minIndex = i;
+    for (int j = i+1; j < n; j++) {
+      if (arr[j] < arr[minIndex]) {
+        minIndex = j;
+      }
+    }
+    float temp = arr[i];
+    arr[i] = arr[minIndex];
+    arr[minIndex] = temp;
+  }
+}
+
+float get_distance(int x,int y){
+ 
+    for(int i=0;i<5;i++){
+    HCSR04 hc_front(x,y);
+    distance1=hc_front.dist();
+    ultrasonic_list1[i]=distance1;
+    
+  }
+  
+  // Serial.println();
+  selectionSort(ultrasonic_list1,5);
+  
+
+  return ultrasonic_list1[2];
+}
+
+void ultrasonic_array(){
+  ultrasonic_distance[0]=get_distance(trigPin1,echoPin1);
+  if (ultrasonic_distance[0]>=100){
+    ultrasonic_distance[0]=100;
+    
+    }
+
+  ultrasonic_distance[1]=get_distance(trigPin2,echoPin2);
+   if (ultrasonic_distance[1]>=60){
+    ultrasonic_distance[1]=60;
+    
+    }
+
+  ultrasonic_distance[2]=get_distance(trigPin3,echoPin3);
+   if (ultrasonic_distance[2]>=60){
+    ultrasonic_distance[2]=60;
+    
+    }
+  
+  ultrasonic_distance[3]=get_distance(trigPin4,echoPin4);
+   if (ultrasonic_distance[3]>=80){
+    ultrasonic_distance[3]=80;
+    
+    }
+
+  ultrasonic_distance[4]=get_distance(trigPin5,echoPin5);
+   if (ultrasonic_distance[4]>=80){
+    ultrasonic_distance[4]=80;
+    
+    }
+  
+  ultrasonic_distance[5]=get_distance(trigPin6,echoPin6);
+   if (ultrasonic_distance[5]>=80){
+    ultrasonic_distance[5]=80;
+    
+    }
+  
+  ultrasonic_distance[6]=get_distance(trigPin7,echoPin7);
+   if (ultrasonic_distance[6]>=80){
+    ultrasonic_distance[6]=80;
+    
+    }
+}
+
+void reverse(int lspeed,int rspeed){
+  analogWrite(enA,lspeed);
+  analogWrite(enB,rspeed);
+  digitalWrite(in1,LOW);
+  digitalWrite(in2,HIGH);
+  digitalWrite(in3,LOW);
+  digitalWrite(in4,HIGH);
+
+}
 
 void turnLeft(int turningSpeed){
   analogWrite(enA, turningSpeed);
@@ -155,7 +359,7 @@ void leftTurn90(){
 
 void leftTurn180(){
   turnLeft(200);
-  delay(1200);
+  delay(1600);
   Stop();
 }
 
@@ -704,7 +908,7 @@ void thAutomaticRouting(int num){      //Take the decision at junctions
                       
                       //delay(1000);
                     }
-                    else{
+                    else if(mainNum == 2){
                       //turnRight
                       Serial.println("Turn Right");
                       printToOled(10,"Right");
@@ -713,6 +917,16 @@ void thAutomaticRouting(int num){      //Take the decision at junctions
                       
                       //delay(1000);
                     }
+                    else{
+                      Serial.println("going back");
+                      printToOled(10,"Back");
+                      leftTurn180();
+                      settleLine();  //#                 //No need to increment the junction
+                      //thCurrentJuncIndex++;
+                      //thIncrementJunc();
+                      //delay(1000);
+
+                           }
                       
                   }          
                   else{
@@ -747,7 +961,7 @@ void thAutomaticRouting(int num){      //Take the decision at junctions
                             thIncrementJunc();
                             //delay(1000);
                             }
-                            else{
+                            else if(mainNum == 2){
                             //turnRight
                             Serial.println("Turn Right");
                             printToOled(10,"Right");
@@ -757,6 +971,16 @@ void thAutomaticRouting(int num){      //Take the decision at junctions
                             thIncrementJunc();
                             //delay(1000);
                           }
+                           else{
+                            Serial.println("going back");
+                            printToOled(10,"Back");
+                            leftTurn180();
+                            settleLine();  //#                 //No need to increment the junction
+                            //thCurrentJuncIndex++;
+                            //thIncrementJunc();
+                            //delay(1000);
+
+                           }
                       }
                       else{
                       int mainNum = thArraySearch(8, thCurrentJunc);  // 8 is definitely in the array
@@ -920,61 +1144,104 @@ int readMagAngle(){
 
 }
 
+
 void thNodeAnalysis(){
-  //floorPattern();
-  int nodeCounter = 0;
-  while(nodeCounter<28){
-      pidStraightLineFollower();
-      nodeCounter++;
+  // int nodeCounter = 0;
+  // while(nodeCounter<28){
+  //     pidStraightLineFollower();
+  //     nodeCounter++;
+  // }
+  // nodeCounter = 0;
+  bool thboxGrabbed = false;
+  while(not thboxGrabbed){
+    ultrasonic_array();
+    if(ultrasonic_distance[0]<=15){
+        Stop();
+        thboxGrabbed = true;  
+              
+    }
+    else{
+        //forward(150,120);  
+        pidStraightLineFollower();
+      }  
   }
-  //delay(2000);
-  nodeCounter = 0;
   Stop();
   delay(1000);
-  if(thStage==3){  
+  if(thStage == 1){  //Exploration phase
+          moveVerticalGripper(0);
+          delay(2000);
+          forward(150,120);
+          delay(500);
+          Stop();
+          ////////////////////////////check color//////////////////////
+          //String colorFloor = FindColorFloor();  
+          String colorBox = FindColorBox();
+
+          if(colorBox == "Red"){
+            thExploredBoxes[0] = thCurrentLocation;
+          }     
+          else if(colorBox == "Green"){
+             thExploredBoxes[1] = thCurrentLocation;
+          }     
+          else{
+            thExploredBoxes[2] = thCurrentLocation;
+          }
+
+          
+          oled.clearDisplay();
+          oled.setTextSize(1);      
+          oled.setTextColor(WHITE); 
+          //oled.println("Team Spectro");
+          oled.setCursor(0, 10);    
+          oled.print(colorBox); 
+          oled.display();
+          delay(3000);
+          
+          moveVerticalGripper(2);
+          delay(2000);
+
+
+          //check color sensor
+
+
+
+
+  }
+  else if(thStage==3){  
       //if(thPlacingTheBox == 0){   //lifting the box when 0
           moveVerticalGripper(thGripperCommands[thGripperCommandCounter][0]);
           delay(2000);
+          //if(thGripperCommandCounter%2==0){
+          if(thPlacingTheBox==0){
+              horizontalGripper(6);
+              delay(1000);
+              forward(150,120);
+              delay(1000);
+              Stop();
+          }
           horizontalGripper(thGripperCommands[thGripperCommandCounter][1]);
           delay(1000);
           moveVerticalGripper(thGripperCommands[thGripperCommandCounter][2]);
           delay(2000);
-          thGripperCommandCounter ++;          
-     // }
-      /*else if(thPlacingTheBox == 1){   //placing the box when 1
-          moveVerticalGripper(1);
-          delay(1500);
-          horizontalGripper(6);
-          delay(1000);
-          moveVerticalGripper(2);
-          delay(1500);
-
-     */ } 
-  /*thPlacingTheBox++;
-  if(thPlacingTheBox>1){
-    thPlacingTheBox = 0;
-    }
-  } */
-
+          thPlacingTheBox++;
+          if(thPlacingTheBox>1){
+            thPlacingTheBox = 0;
+          }
+          thGripperCommandCounter ++;       
+  }
   leftTurn180();
   settleLine();
   
-  
-  
-  //while(nodeCounter<15){
-  //    pidStraightLineFollower();
-  //    nodeCounter++;
-  //}
-  
-  //pidStraightLineFollower();
+
+
 }
 
 void thPathFinder(){
   thMainDirection = readMagAngle();
   Serial.print("Main angle: ");
   Serial.println(thMainDirection);
-  moveVerticalGripper(2); //change later
-  delay(1500);
+  // moveVerticalGripper(2); //change later
+  // delay(1500);
   horizontalGripper(6);    //reset positions of the gripper
   delay(1000);
 
@@ -1099,10 +1366,10 @@ void moveVerticalGripper(int pos){
           upDownGripperLocation = 0;
     }     
     else if(pos == 1){
-          upDownGripperLocation = -2000;
+          upDownGripperLocation = -3500;
     }
     else if(pos == 2){
-          upDownGripperLocation = -4000;
+          upDownGripperLocation = -7000;
     }
     stepper.moveTo(upDownGripperLocation);  //-4000 maximum height and 0 is minimum height 0
     stepper.runToPosition();
@@ -1111,22 +1378,23 @@ void moveVerticalGripper(int pos){
 
 void horizontalGripper(int pos){
   if (pos==6){
-    Gripper.write(180);
-    delay(200);
+    Gripper.write(165);
+    delay(2000);
   }
   else if (pos==5){
     Gripper.write(105);
-    delay(200);
+    delay(2000);
   }
   else if (pos==4){
     Gripper.write(55);
-    delay(200);
+    delay(2000);
   }
   else if (pos==3){
     Gripper.write(5);
-    delay(200);
+    delay(2000);
   }
 }
+
 
 
 
@@ -1159,6 +1427,26 @@ void setup() {
   stepper.setMaxSpeed(1500);
   // Set the maximum acceleration in steps per second^2:
   stepper.setAcceleration(500);
+  /////////////////////// color sensor //////////////////////
+
+  pinMode(S0_PIN_floor, OUTPUT);
+  pinMode(S1_PIN_floor, OUTPUT);
+  pinMode(S2_PIN_floor, OUTPUT);
+  pinMode(S3_PIN_floor, OUTPUT);
+
+  pinMode(S0_PIN_box, OUTPUT);
+  pinMode(S1_PIN_box, OUTPUT);
+  pinMode(S2_PIN_box, OUTPUT);
+  pinMode(S3_PIN_box, OUTPUT);
+  //Set OUT_PIN as Input
+  pinMode(OUT_PIN_floor, INPUT);
+  pinMode(OUT_PIN_box, INPUT);
+  // Set Pulse Width scaling to 20%
+  digitalWrite(S0_PIN_floor, HIGH);
+  digitalWrite(S1_PIN_floor, LOW);
+  digitalWrite(S0_PIN_box, HIGH);
+  digitalWrite(S1_PIN_box, LOW);
+
   ///////////////////////////////////////////////////////////
 
   
@@ -1174,7 +1462,24 @@ void setup() {
   pinMode(ProxSensor_9,INPUT);
   pinMode(ProxSensor_10,INPUT);
   pinMode(ProxSensor_11,INPUT);    
-  pinMode(ProxSensor_12,INPUT);    
+  pinMode(ProxSensor_12,INPUT);  
+
+  //////////////////// ultrasonic sensors  ////////////////  
+
+  pinMode(trigPin1,OUTPUT);
+  pinMode(echoPin1,INPUT);
+  pinMode(trigPin2,OUTPUT);
+  pinMode(echoPin2,INPUT);
+  pinMode(trigPin3,OUTPUT);
+  pinMode(echoPin3,INPUT);
+  pinMode(trigPin4,OUTPUT);
+  pinMode(echoPin4,INPUT);
+  pinMode(trigPin5,OUTPUT);
+  pinMode(echoPin5,INPUT);
+  pinMode(trigPin6,OUTPUT);
+  pinMode(echoPin6,INPUT);
+  pinMode(trigPin7,OUTPUT);
+  pinMode(echoPin7,INPUT);
 
 
   // Set all the motor control pins to outputs
@@ -1202,6 +1507,12 @@ void setup() {
 
   //Remove this
   thMainDirection = readMagAngle();
+
+  //delete this
+  moveVerticalGripper(2);
+  delay(2000);
+  horizontalGripper(6);
+  delay(1000);
 }
 
 
@@ -1221,6 +1532,8 @@ void loop(){
           oled.println(""); // text to display
           oled.display();               // show on OLED
           */
+          
+          
 
     ///////////////////////////////////////////////////////////////////////////////////
     //Serial.println("Started");
@@ -1229,17 +1542,38 @@ void loop(){
     //Serial.println(a);
     thPathFinder();
 
-    /*moveVerticalGripper(1);
-    delay(2000);
-    moveVerticalGripper(2);
-    delay(2000);
-    moveVerticalGripper(0);
-    delay(2000);*/
+    // String colorBox = FindColorBox();////////////////////////////check color//////////////////////
+    // //String colorFloor = FindColorFloor();////////////////////////////check color//////////////////////
+    // oled.clearDisplay();
+    // oled.setTextSize(1);      
+    // oled.setTextColor(WHITE); 
+    // //oled.println("Team Spectro");
+    // oled.setCursor(0, 10);    
+    // oled.print(colorBox); 
+    // oled.display();
 
-    /*horizontalGripper(5);
-    delay(2000);
-    horizontalGripper(6);
-    delay(2000);*/
+
+    
+    // thStage = 3;
+    // thNodeAnalysis();
+    // delay(2000);
+    // printToOled(10,"done");
+
+    ///moveVerticalGripper(1);
+    //delay(2000);
+    //moveVerticalGripper(2);
+    //delay(2000);
+    //moveVerticalGripper(0);
+    //delay(2000);*/
+    // ultrasonic_array();
+    // horizontalGripper(3);
+    // delay(2000);
+    // horizontalGripper(4);
+    // delay(2000);
+    // horizontalGripper(5);
+    // delay(2000);
+    // horizontalGripper(6);
+    // delay(2000);
 
     //printToOled(10,String(thStage));
     //gripperUpAndDown();
