@@ -4,6 +4,7 @@
   #include <QMC5883LCompass.h>
   #include <AccelStepper.h>
   #include <Servo.h>
+  #include <Adafruit_Sensor.h>
   QMC5883LCompass compass;
 
   #define SCREEN_WIDTH 128 // OLED display width,  in pixels
@@ -14,6 +15,21 @@
   #define motorPin2  49      // IN2 on the ULN2003 driver
   #define motorPin3  47     // IN3 on the ULN2003 driver
   #define motorPin4  45     // IN4 on the ULN2003 driver
+
+  //Color sensor 
+  #define S0_PIN_box 9
+  #define S1_PIN_box 10
+  #define S2_PIN_box 11
+  #define S3_PIN_box 12
+  #define OUT_PIN_box  13
+
+  #define S0_PIN_floor 5
+  #define S1_PIN_floor 4
+  #define S2_PIN_floor 7
+  #define S3_PIN_floor 6
+  #define OUT_PIN_floor  8
+  
+
   // Define the AccelStepper interface type; 4 wire motor in half step mode:
   #define MotorInterfaceType 8
 
@@ -112,6 +128,88 @@
   int i_error = 0;
 
 //////////////////////////// Functions //////////////////////////////////
+
+
+String FindColorBox(){
+  int r, g, b;
+  String color = " ";
+  r = process_red_value_Box();
+  delay(200);
+  g = process_green_value_Box();
+  delay(200);
+  b = process_blue_value_Box();
+  delay(200);
+  Serial.print("r = ");
+  Serial.print(r);
+  Serial.print(" ");
+  Serial.print("g = ");
+  Serial.print(g);
+  Serial.print(" ");
+  Serial.print("b = ");
+  Serial.print(b);
+  Serial.print(" ");
+  Serial.println();
+
+    //////////////////////////////////////////////
+    oled.clearDisplay();
+  oled.setTextSize(1);      
+  oled.setTextColor(WHITE); 
+  //oled.println("Team Spectro");
+  oled.setCursor(0, 30);    
+  oled.print(r);
+  oled.print(" ");
+   oled.print(g);
+    oled.print(" ");
+    oled.print(b);
+     oled.println(" "); 
+  oled.display();
+  ////////////////////////////////////////////
+    if ((b < 55)&&(r>75))
+  {
+    Serial.println("B Colour Blue");
+    color = "Colour Blue";
+  }
+   else if((g < 70)&&(b<70))
+  {
+    Serial.println("B Colour Green");
+    color = "Colour Green";
+  }
+
+
+    else if (r < 62)
+  {
+    Serial.println("B Colour Red");
+    color = "Colour Red";
+  }
+ 
+  return(color);
+}
+
+////////////////////////////////////fun 2 ///////////////////
+int process_red_value_Box()
+{
+  digitalWrite(S2_PIN_box, LOW);
+  digitalWrite(S3_PIN_box, LOW);
+  int pulse_length = pulseIn(OUT_PIN_box, LOW);
+  return pulse_length;
+}
+
+////////////////////////////////////fun 3 ///////////////////
+int process_green_value_Box()
+{
+  digitalWrite(S2_PIN_box, HIGH);
+  digitalWrite(S3_PIN_box, HIGH);
+  int pulse_length = pulseIn(OUT_PIN_box, LOW);
+  return pulse_length;
+}
+////////////////////////////////////fun 4 ///////////////////
+int process_blue_value_Box()
+{
+  digitalWrite(S2_PIN_box, LOW);
+  digitalWrite(S3_PIN_box, HIGH);
+  int pulse_length = pulseIn(OUT_PIN_box, LOW);
+  return pulse_length;
+}
 
 void turnLeft(int turningSpeed){
   analogWrite(enA, turningSpeed);
@@ -925,7 +1023,7 @@ void thNodeAnalysis(){
   readLineSensors();
   int thBoxIRCounter = 0;
   //thBoxIRCounter = inputVal[3] + inputVal[4] + inputVal[5] +  inputVal[6] +  inputVal[7] +  inputVal[8] +  inputVal[9] ;
-  while(thBoxIRCounter<5){
+  while(thBoxIRCounter<4){
     readLineSensors();
     thBoxIRCounter = inputVal[3] + inputVal[4] + inputVal[5] +  inputVal[6] +  inputVal[7] +  inputVal[8] +  inputVal[9] ;
     pidLineFollower();
@@ -944,6 +1042,16 @@ void thNodeAnalysis(){
           delay(200);
           Stop();
           //read color sensors
+          String colorBox = FindColorBox();////////////////////////////check color//////////////////////
+          //String colorFloor = FindColorFloor();////////////////////////////check color//////////////////////
+          oled.clearDisplay();
+          oled.setTextSize(1);      
+          oled.setTextColor(WHITE); 
+          //oled.println("Team Spectro");
+          oled.setCursor(0, 10);    
+          oled.print(colorBox); 
+          oled.display();
+          delay(3000);
           moveVerticalGripper(2);
           delay(1000);
 
@@ -958,15 +1066,15 @@ void thNodeAnalysis(){
 
 
   ////////////////////////////////////////////
-  int nodeCounter = 0;
-  while(nodeCounter<28){
-      pidStraightLineFollower();
-      nodeCounter++;
-  }
-  //delay(2000);
-  nodeCounter = 0;
-  Stop();
-  delay(1000);
+  // int nodeCounter = 0;
+  // while(nodeCounter<28){
+  //     pidStraightLineFollower();
+  //     nodeCounter++;
+  // }
+  // //delay(2000);
+  // nodeCounter = 0;
+  // Stop();
+  // delay(1000);
   if(thStage==3){  
       //if(thPlacingTheBox == 0){   //lifting the box when 0
           moveVerticalGripper(thGripperCommands[thGripperCommandCounter][0]);
@@ -1135,10 +1243,10 @@ void moveVerticalGripper(int pos){
           upDownGripperLocation = 0;
     }     
     else if(pos == 1){
-          upDownGripperLocation = -2000;
+          upDownGripperLocation = -3500;
     }
     else if(pos == 2){
-          upDownGripperLocation = -4000;
+          upDownGripperLocation = -7000;
     }
     stepper.moveTo(upDownGripperLocation);  //-4000 maximum height and 0 is minimum height 0
     stepper.runToPosition();
@@ -1147,19 +1255,19 @@ void moveVerticalGripper(int pos){
 
 void horizontalGripper(int pos){
   if (pos==6){
-    Gripper.write(180);
+    Gripper.write(20);
     delay(200);
   }
   else if (pos==5){
-    Gripper.write(105);
+    Gripper.write(110);
     delay(200);
   }
   else if (pos==4){
-    Gripper.write(55);
+    Gripper.write(120);
     delay(200);
   }
   else if (pos==3){
-    Gripper.write(5);
+    Gripper.write(180);
     delay(200);
   }
 }
@@ -1220,6 +1328,27 @@ void setup() {
 	pinMode(in2, OUTPUT);
 	pinMode(in3, OUTPUT);
 	pinMode(in4, OUTPUT);
+
+  //color sensor
+   // Set the S0, S1, S2, S3 Pins as Output
+  pinMode(S0_PIN_floor, OUTPUT);
+  pinMode(S1_PIN_floor, OUTPUT);
+  pinMode(S2_PIN_floor, OUTPUT);
+  pinMode(S3_PIN_floor, OUTPUT);
+
+  pinMode(S0_PIN_box, OUTPUT);
+  pinMode(S1_PIN_box, OUTPUT);
+  pinMode(S2_PIN_box, OUTPUT);
+  pinMode(S3_PIN_box, OUTPUT);
+  //Set OUT_PIN as Input
+  pinMode(OUT_PIN_floor, INPUT);
+  pinMode(OUT_PIN_box, INPUT);
+  // Set Pulse Width scaling to 20%
+  digitalWrite(S0_PIN_floor, HIGH);
+  digitalWrite(S1_PIN_floor, LOW);
+  digitalWrite(S0_PIN_box, HIGH);
+  digitalWrite(S1_PIN_box, LOW);
+
 	
 	// Turn off motors - Initial state
 	digitalWrite(in1, LOW);
