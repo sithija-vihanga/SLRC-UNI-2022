@@ -378,24 +378,24 @@ String FindColorBox(){   //update further
     if (((r>100)&&(r<120))&&((g >90)&&(g<110))&&((b<80)&&(b>55)))
   {
     Serial.println("B Colour Blue");
-    color = "Colour Blue";
+    color = "Blue";
   }
    else if(((r>95)&&(r<115))&&((g >90)&&(g<110))&&((b<90)&&(b>72)))
   {
     Serial.println("B Colour Green");
-    color = "Colour Green";
+    color = "Green";
   }
 
 
     else if (((r>85)&&(r<105))&&((g >115)&&(g<128))&&((b<99)&&(b>76)))
   {
     Serial.println("B Colour Red");
-    color = "Colour Red";
+    color = "Red";
   }
   else 
   {
-    Serial.println("B Colour Red");
-    color = "Colour Red";
+    Serial.println("B Colour Blue");
+    color = "Blue";
   }
  
   return(color);
@@ -1031,12 +1031,22 @@ void thAutomaticRouting(int num){      //Take the decision at junctions
 
                     //Update this function
                     }
-                    else{
+
+                    else if(mainNum == 2){  
                       //turnRight
                       Serial.println("Turn Right");
                       printToOled(10,"Right");
                       rightTurn90();
                       settleLine();  //#
+                    //Update this function
+                    }
+                    else{
+                      //turnleft by 180
+                      Serial.println("Turn Back");
+                      printToOled(10,"back");
+                      leftTurn180();
+                      settleLine();  //#
+                    //Update this function
                       
                       //delay(1000);
                     }
@@ -1297,6 +1307,15 @@ void thNodeAnalysis(){
           delay(200);
           //read color sensors
           String colorBox = FindColorBox();////////////////////////////check color//////////////////////
+          if(colorBox=="Red"){
+            thExploredBoxes[0] = thCurrentLocation;
+          }
+          else if(colorBox == "Green"){
+            thExploredBoxes[1] = thCurrentLocation;
+           }
+          else{
+            thExploredBoxes[2] = thCurrentLocation;
+          }
           //String colorFloor = FindColorFloor();////////////////////////////check color//////////////////////
           oled.clearDisplay();
           oled.setTextSize(1);      
@@ -1336,9 +1355,10 @@ void thNodeAnalysis(){
       //if(thPlacingTheBox == 0){   //lifting the box when 0
       if(thBoxGrab){
           reverse(150,140);
-          delay(250);
+          delay(200);
           Stop();
           delay(100);
+          //settleLine();
   
       }
     
@@ -1348,7 +1368,7 @@ void thNodeAnalysis(){
 
       if(thBoxGrab){
           forward(150,140);
-          delay(480);
+          delay(500);
           Stop();
           delay(100);
           
@@ -1442,6 +1462,14 @@ void thPathFinder(){
             thLocationIndex++;
             if(thLocationsToMove[thLocationIndex]==5){
               printToOled(10,"TH Finished");
+              delay(1000);
+              printToOled(20,String(thExploredBoxes[0]));
+              delay(1000);
+              printToOled(20,String(thExploredBoxes[1]));
+              delay(1000);
+              printToOled(20,String(thExploredBoxes[2]));
+              delay(1000);
+
               thStage++; // Going to next stage
               delay(1000);
               printToOled(20,String(thStage));
@@ -1719,9 +1747,26 @@ void loop(){
     // printToOled(10,String(a));
     // delay(100);
 
-    // String b = FindColorBox();
-    // printToOled(10,b);
-    // delay(100);
+    // String x = FindColorBox();
+    // printToOled(10,x);
+    // int r = process_red_value_Box();
+    // int g = process_green_value_Box();
+    // int b = process_blue_value_Box();
+
+
+    // //oled.clearDisplay(); // clear display
+    // oled.setTextSize(1);          // text size
+    // oled.setTextColor(WHITE);     // text color
+    // oled.setCursor(20, 20);        // position to display
+    // oled.print(String(r));
+    // oled.print(" ");
+    // oled.print(String(g));
+    // oled.print(" ");
+    // oled.print(String(b));
+    // oled.print(" ");
+    // oled.println(""); // text to display
+    // oled.display();               // show on OLED
+    // //delay(100);
 
     /*moveVerticalGripper(1);
     delay(2000);
