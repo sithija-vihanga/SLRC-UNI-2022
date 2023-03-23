@@ -211,6 +211,16 @@ int process_blue_value_Box()
   return pulse_length;
 }
 
+void reverse(int lspeed,int rspeed){
+  analogWrite(enA,lspeed);
+  analogWrite(enB,rspeed);
+  digitalWrite(in1,LOW);
+  digitalWrite(in2,HIGH);
+  digitalWrite(in3,LOW);
+  digitalWrite(in4,HIGH);
+  
+}
+
 void turnLeft(int turningSpeed){
   analogWrite(enA, turningSpeed);
   analogWrite(enB, turningSpeed);
@@ -253,7 +263,7 @@ void leftTurn90(){
 
 void leftTurn180(){
   turnLeft(200);
-  delay(1200);
+  delay(1600);
   Stop();
 }
 
@@ -801,6 +811,8 @@ void thAutomaticRouting(int num){      //Take the decision at junctions
                       //forward(150,150);
                       
                       //delay(1000);
+
+                    //Update this function
                     }
                     else{
                       //turnRight
@@ -1020,26 +1032,43 @@ int readMagAngle(){
 
 void thNodeAnalysis(){
    //////////////////////////////////////////////////////////
-  readLineSensors();
+ 
   int thBoxIRCounter = 0;
   //thBoxIRCounter = inputVal[3] + inputVal[4] + inputVal[5] +  inputVal[6] +  inputVal[7] +  inputVal[8] +  inputVal[9] ;
+  for(int i =0; i<5;i++){
+     readLineSensors();
+     pidStraightLineFollower();
+     delay(100);
+
+  }
+  Stop();
+
+  //Stage 01 preparations of the arm
+  if(thStage == 1){
+      horizontalGripper(6);
+      delay(1000);
+      moveVerticalGripper(0);
+      delay(2000);
+  }
+
+  
   while(thBoxIRCounter<4){
     readLineSensors();
+    pidStraightLineFollower();
     thBoxIRCounter = inputVal[3] + inputVal[4] + inputVal[5] +  inputVal[6] +  inputVal[7] +  inputVal[8] +  inputVal[9] ;
-    pidLineFollower();
   }
   
   Stop();
-    //reverse
+          //reverse the robot
+  // reverse(150,130);
+  // delay(1000);
+  // settleLine();
+  // Stop();
   
 
   if(thStage == 1){
-          horizontalGripper(6);
-          delay(1000);
-          moveVerticalGripper(0);
-          delay(2000);
           forward(150,120);
-          delay(200);
+          delay(300);
           Stop();
           //read color sensors
           String colorBox = FindColorBox();////////////////////////////check color//////////////////////
@@ -1102,6 +1131,11 @@ void thNodeAnalysis(){
 
   leftTurn180();
   settleLine();
+  // check this part
+  reverse(150,130);
+  delay(200);
+  Stop();
+  settleLine();
   
   
   
@@ -1149,11 +1183,11 @@ void thPathFinder(){
   }
 }
 
-int thCheckOrientation(){
+int thCheckOrientation(int mainDirection){
     int thCurrentAngle =  readMagAngle();
     int thAngleLimits[4];
     //Initialize limits
-    thAngleLimits[0] = thMainDirection + 45;
+    thAngleLimits[0] = mainDirection + 45;
     for(int i = 1; i<4; i++){
       thAngleLimits[i] = thAngleLimits[i-1] + 90;
     }
@@ -1182,7 +1216,7 @@ int thCheckOrientation(){
 }
 
 void thUpdateJunction(){
-        int thSector = thCheckOrientation();
+        int thSector = thCheckOrientation(thMainDirection);
           printToOled(10,String(thMainDirection));
           printToOled(20,String(thSector));
           if(thSector == 0){
@@ -1204,7 +1238,7 @@ void thUpdateJunction(){
 }
 
 void thIncrementJunc(){
-    int thAllignment = thCheckOrientation();
+    int thAllignment = thCheckOrientation(thMainDirection);
     if(thAllignment == 0){
         thCurrentJuncIndex++;
     }
