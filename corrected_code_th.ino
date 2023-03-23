@@ -5,6 +5,7 @@
   #include <AccelStepper.h>
   #include <Servo.h>
   #include <Adafruit_Sensor.h>
+  #include <HCSR04.h>
   QMC5883LCompass compass;
 
   #define SCREEN_WIDTH 128 // OLED display width,  in pixels
@@ -38,6 +39,31 @@
   // declare an SSD1306 display object connected to I2C
   Adafruit_SSD1306 oled(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, -1);
 
+  /////////////////////////// ultrasonic //////////////////////////////////
+
+  int REFERENCE_DISTANCE=10;
+  float distance1,error1,error2,errorD1,errorD2,previous_errorD1,previous_errorD2,integral1,integral2,derivative1,derivative2,error3,error4,PID_ErrorD1,PID_ErrorD2;
+  float ultrasonic_distance[7];
+  int left_motor_speed,right_motor_speed,initial_speed=150,MAX_SPEED=225,MIN_SPEED=80;
+  float ultrasonic_list1[5];
+
+
+  const int trigPin1 = 27;//distance1
+  const int echoPin1 = 26;
+  const int trigPin2 = 29;//distance2
+  const int echoPin2 = 28;
+  const int trigPin3 = 31;//distance3
+  const int echoPin3 = 30;
+  const int trigPin4 = 23;//distance4
+  const int echoPin4 = 22;
+  const int trigPin5 = 25;//distance5
+  const int echoPin5 = 24;
+  const int trigPin6 = 33;//distance6
+  const int echoPin6 = 32;
+  const int trigPin7 = 35;//distance6
+  const int echoPin7 = 34;
+  /////////////////////////////////////////////////////////////////////////
+
   //////////////////////// floorPattern for tower of hanoi //////////////////////////////////
   int floorCounter = 0; 
   String junctionType = "None";
@@ -66,13 +92,14 @@
   bool thComplete = false;
   int thMainDirection = 0;
   int thStage = 0;
-  int thUserInput01 = 1; //Change these
+  int thUserInput01 = 2; //Change these
   int thUserInput02 = 1; // Change thses
   int thPlacingTheBox = 0;
 
   int thExploredBoxes[3] = {48, 32, 16}; // 0: largest box 1: middle box 2: Smallest box
   int thGripperCommands[10][3] = {{0,5,1},{0,6,2},{0,4,2},{1,6,2},{0,3,2},{2,6,2}};                     // vertical position :: gripper position :: vertical position
   int thGripperCommandCounter = 0;
+  bool thBoxGrab = true;
     //String thJuncType;
   /////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -129,8 +156,192 @@
 
 //////////////////////////// Functions //////////////////////////////////
 
+///////////////Inserion Sort//////////////////////////////////////////////
+ void insertionSort(float arr[], int n) {
+  int i, key, j;
+  for (i = 1; i < n; i++) {
+    key = arr[i];
+    j = i - 1;
+    while (j >= 0 && arr[j] > key) {
+      arr[j + 1] = arr[j];
+      j = j - 1;
+    }
+    arr[j + 1] = key;
+  }
+}
+ ////////////////Selection sort//////////////////////////
+ void selectionSort(float arr[], int n) {
+  for (int i = 0; i < n-1; i++) {
+    int minIndex = i;
+    for (int j = i+1; j < n; j++) {
+      if (arr[j] < arr[minIndex]) {
+        minIndex = j;
+      }
+    }
+    float temp = arr[i];
+    arr[i] = arr[minIndex];
+    arr[minIndex] = temp;
+  }
+}
+//////////////////////////////////////////////////////
 
-String FindColorBox(){
+////////////////Get the distance//////////////////////
+float get_distance(int x,int y){
+ 
+    for(int i=0;i<5;i++){
+    HCSR04 hc_front(x,y);
+    distance1=hc_front.dist();
+    ultrasonic_list1[i]=distance1;
+    
+    }
+    for (int j=0;j<5;j++){
+    /*Serial.print(ultrasonic_list1[j]);
+    Serial.print(" ");*/
+   }
+  // Serial.println();
+    selectionSort(ultrasonic_list1,5);
+  // Serial.print("Sorted list:");
+    for (int j=0;j<5;j++){ 
+    //  Serial.print(ultrasonic_list1[j]);
+    // Serial.print(" ");
+      
+  }
+
+  return ultrasonic_list1[2];
+  //Serial.println();
+ /* if (m==0){
+    if (ultrasonic_list1[2]>=100){
+      ultrasonic_list1[2]=100;
+      
+      }
+    
+    }
+  if (m==1){
+    if (ultrasonic_list1[2]>=60){
+      ultrasonic_list1[2]=60;
+      
+      }
+    }
+    if (m==2){
+    if (ultrasonic_list1[2]>=60){
+      ultrasonic_list1[2]=60;
+      
+      }
+    }
+    if (m==3){
+    if (ultrasonic_list1[2]>=80){
+      ultrasonic_list1[2]=80;
+      
+      }
+    }
+    if (m==4){
+    if (ultrasonic_list1[2]>=80){
+      ultrasonic_list1[2]=80;
+      
+      }
+    }
+    if (m==5){
+    if (ultrasonic_list1[2]>=80){
+      ultrasonic_list1[2]=80;
+      
+      }
+    }
+    if (m==6){
+    if (ultrasonic_list1[2]>=80){
+      ultrasonic_list1[2]=80;
+      
+      }
+      
+    }
+    */
+   
+    
+    
+  
+}
+
+void ultrasonic_array(){
+  ultrasonic_distance[0]=get_distance(trigPin1,echoPin1);
+  if ((ultrasonic_distance[0]>=100)||(ultrasonic_distance[0]==0)){
+      ultrasonic_distance[0]=100;
+    
+    }
+    /*
+  Serial.print("distance 1:");
+  Serial.print(ultrasonic_distance[0]);
+  Serial.println();
+  */
+  
+  ultrasonic_distance[1]=get_distance(trigPin2,echoPin2);
+   if ((ultrasonic_distance[1]>=150)||(ultrasonic_distance[1]==0)){
+    ultrasonic_distance[1]=150;
+    
+    }
+    /*
+  Serial.print("distance 2:");
+  Serial.print(ultrasonic_distance[1]);
+  Serial.println();
+ */
+  ultrasonic_distance[2]=get_distance(trigPin3,echoPin3);
+   if ((ultrasonic_distance[2]>=150)||(ultrasonic_distance[2]==0)){
+    ultrasonic_distance[2]=150;
+    
+    }
+   /* 
+  Serial.print("distance 3:");
+  Serial.print(ultrasonic_distance[2]);
+  Serial.println();
+  */
+  
+  ultrasonic_distance[3]=get_distance(trigPin4,echoPin4);
+   if ((ultrasonic_distance[3]>=100)||(ultrasonic_distance[3]==0)){
+    ultrasonic_distance[3]=100;
+    
+    }
+    /*
+  Serial.print("distance 4:");
+  Serial.print(ultrasonic_distance[3]);
+  Serial.println();
+  */
+  ultrasonic_distance[4]=get_distance(trigPin5,echoPin5);
+   if ((ultrasonic_distance[4]>=100)||(ultrasonic_distance[4]==0)){
+    ultrasonic_distance[4]=100;
+    
+    }
+    /*
+  Serial.print("distance 5:");
+  Serial.print(ultrasonic_distance[4]);
+  Serial.println();
+  */
+  
+  ultrasonic_distance[5]=get_distance(trigPin6,echoPin6);
+   if ((ultrasonic_distance[5]>=100)||(ultrasonic_distance[5]==0)){
+    ultrasonic_distance[5]=100;
+    
+    }
+    /*
+  Serial.print("distance 6:");
+  Serial.print(ultrasonic_distance[5]);
+  Serial.println();
+  */
+  
+  ultrasonic_distance[6]=get_distance(trigPin7,echoPin7);
+   if ((ultrasonic_distance[6]>=100)||(ultrasonic_distance[6]==0)){
+    ultrasonic_distance[6]=100;
+    
+    }
+    /*
+  Serial.print("distance 7:");
+  Serial.print(ultrasonic_distance[6]);
+  Serial.println();
+  */
+ 
+  
+  
+}
+
+
+String FindColorBox(){   //update further
   int r, g, b;
   String color = " ";
   r = process_red_value_Box();
@@ -151,7 +362,7 @@ String FindColorBox(){
   Serial.println();
 
     //////////////////////////////////////////////
-    oled.clearDisplay();
+  oled.clearDisplay();
   oled.setTextSize(1);      
   oled.setTextColor(WHITE); 
   //oled.println("Team Spectro");
@@ -164,19 +375,24 @@ String FindColorBox(){
      oled.println(" "); 
   oled.display();
   ////////////////////////////////////////////
-    if ((b < 55)&&(r>75))
+    if (((r>100)&&(r<120))&&((g >90)&&(g<110))&&((b<80)&&(b>55)))
   {
     Serial.println("B Colour Blue");
     color = "Colour Blue";
   }
-   else if((g < 70)&&(b<70))
+   else if(((r>95)&&(r<115))&&((g >90)&&(g<110))&&((b<90)&&(b>72)))
   {
     Serial.println("B Colour Green");
     color = "Colour Green";
   }
 
 
-    else if (r < 62)
+    else if (((r>85)&&(r<105))&&((g >115)&&(g<128))&&((b<99)&&(b>76)))
+  {
+    Serial.println("B Colour Red");
+    color = "Colour Red";
+  }
+  else 
   {
     Serial.println("B Colour Red");
     color = "Colour Red";
@@ -184,6 +400,7 @@ String FindColorBox(){
  
   return(color);
 }
+
 
 ////////////////////////////////////fun 2 ///////////////////
 int process_red_value_Box()
@@ -407,7 +624,7 @@ void pidStraightLineFollower(){
  // min_speed = base_speed - pid;
 
 
-  base_speed = 130; 
+  base_speed = 140; 
   plus_speed = base_speed + pid;
   min_speed = base_speed - pid;
 
@@ -549,10 +766,10 @@ void settleLine(){
     //make adjusments to settle on the line
   printToOled(20,String(MazeError));    
     if (MazeError>10){
-      turnLeft(150); 
+      turnLeft(180); 
   }
     else if (MazeError<-10){
-      turnRight(150); 
+      turnRight(180); 
   }
    else{
      Stop();
@@ -638,12 +855,12 @@ void floorPattern(){
                               linePathPattern = "Line";
                               //pathCrossing = true;
                       } */
-                      else if((lineSensorCount[0] >2 ) and (lineSensorCount[1] >=1) and (lineSensorCount[2] < 2 )){
+                      else if((lineSensorCount[0] >1 ) and (lineSensorCount[1] >=1) and (lineSensorCount[2] == 0 )){
                               linePathPattern = "HardRightTurn";
                               //forward(50,50);
                               pathCrossing = true;
                       }
-                      else if((lineSensorCount[0] <2 ) and (lineSensorCount[1] >=1) and (lineSensorCount[2] >2 )){
+                      else if((lineSensorCount[0] == 0 ) and (lineSensorCount[1] >=1) and (lineSensorCount[2] >1 )){
                       //else{
                               linePathPattern = "HardLeftTurn";
                               //forward(50,50);
@@ -907,6 +1124,13 @@ void thAutomaticRouting(int num){      //Take the decision at junctions
 
                       }
                   }
+
+                  for(int j = 0; j<8; j++){
+                    readLineSensors();
+                    pidStraightLineFollower();
+                    //delay(10);
+                  }
+                  Stop();
           
                   //Serial.println("Location Reached");
                   //delay(2000);
@@ -1035,13 +1259,13 @@ void thNodeAnalysis(){
  
   int thBoxIRCounter = 0;
   //thBoxIRCounter = inputVal[3] + inputVal[4] + inputVal[5] +  inputVal[6] +  inputVal[7] +  inputVal[8] +  inputVal[9] ;
-  for(int i =0; i<5;i++){
-     readLineSensors();
-     pidStraightLineFollower();
-     delay(100);
+  // for(int i =0; i<2;i++){
+  //    readLineSensors();
+  //    pidStraightLineFollower();
+  //    delay(50);
 
-  }
-  Stop();
+  // }
+  // Stop();
 
   //Stage 01 preparations of the arm
   if(thStage == 1){
@@ -1067,9 +1291,10 @@ void thNodeAnalysis(){
   
 
   if(thStage == 1){
-          forward(150,120);
-          delay(300);
+          forward(150,130);
+          delay(80);
           Stop();
+          delay(200);
           //read color sensors
           String colorBox = FindColorBox();////////////////////////////check color//////////////////////
           //String colorFloor = FindColorFloor();////////////////////////////check color//////////////////////
@@ -1083,6 +1308,9 @@ void thNodeAnalysis(){
           delay(3000);
           moveVerticalGripper(2);
           delay(1000);
+          reverse(150,140);
+          delay(250);
+          Stop();
 
 
 
@@ -1106,13 +1334,49 @@ void thNodeAnalysis(){
   // delay(1000);
   if(thStage==3){  
       //if(thPlacingTheBox == 0){   //lifting the box when 0
-          moveVerticalGripper(thGripperCommands[thGripperCommandCounter][0]);
-          delay(2000);
-          horizontalGripper(thGripperCommands[thGripperCommandCounter][1]);
-          delay(1000);
-          moveVerticalGripper(thGripperCommands[thGripperCommandCounter][2]);
-          delay(2000);
-          thGripperCommandCounter ++;          
+      if(thBoxGrab){
+          reverse(150,140);
+          delay(250);
+          Stop();
+          delay(100);
+  
+      }
+    
+
+      moveVerticalGripper(thGripperCommands[thGripperCommandCounter][0]);
+      delay(2000);
+
+      if(thBoxGrab){
+          forward(150,140);
+          delay(480);
+          Stop();
+          delay(100);
+          
+      }
+      
+
+      horizontalGripper(thGripperCommands[thGripperCommandCounter][1]);
+      delay(1000);
+      if(not thBoxGrab){
+          //thBoxGrab = true;
+          reverse(150,140);
+          delay(400);
+          Stop();
+          thBoxGrab = true; 
+      }
+      else{
+          thBoxGrab = false; 
+      }
+      moveVerticalGripper(thGripperCommands[thGripperCommandCounter][2]);
+      delay(2000);
+        
+      
+
+
+          thGripperCommandCounter ++;  
+          reverse(150,140);
+          delay(250);
+          Stop();                  
      // }
       /*else if(thPlacingTheBox == 1){   //placing the box when 1
           moveVerticalGripper(1);
@@ -1132,9 +1396,17 @@ void thNodeAnalysis(){
   leftTurn180();
   settleLine();
   // check this part
-  reverse(150,130);
-  delay(200);
+  reverse(150,140);
+  delay(450);
   Stop();
+  settleLine();
+
+  // for better line following
+  for (int i = 0; i<5; i++){
+    readLineSensors();
+    pidStraightLineFollower();
+    delay(10);
+  }
   settleLine();
   
   
@@ -1352,7 +1624,23 @@ void setup() {
   pinMode(ProxSensor_9,INPUT);
   pinMode(ProxSensor_10,INPUT);
   pinMode(ProxSensor_11,INPUT);    
-  pinMode(ProxSensor_12,INPUT);    
+  pinMode(ProxSensor_12,INPUT); 
+
+  ///////////////// ultrasonic sensors /////////////////////////   
+  pinMode(trigPin1,OUTPUT);
+  pinMode(echoPin1,INPUT);
+  pinMode(trigPin2,OUTPUT);
+  pinMode(echoPin2,INPUT);
+  pinMode(trigPin3,OUTPUT);
+  pinMode(echoPin3,INPUT);
+  pinMode(trigPin4,OUTPUT);
+  pinMode(echoPin4,INPUT);
+  pinMode(trigPin5,OUTPUT);
+  pinMode(echoPin5,INPUT);
+  pinMode(trigPin6,OUTPUT);
+  pinMode(echoPin6,INPUT);
+  pinMode(trigPin7,OUTPUT);
+  pinMode(echoPin7,INPUT);
 
 
   // Set all the motor control pins to outputs
@@ -1427,6 +1715,13 @@ void loop(){
     //printToOled(10,String(a));
     //Serial.println(a);
     thPathFinder();
+    // int a = thCheckOrientation(thMainDirection);
+    // printToOled(10,String(a));
+    // delay(100);
+
+    // String b = FindColorBox();
+    // printToOled(10,b);
+    // delay(100);
 
     /*moveVerticalGripper(1);
     delay(2000);
