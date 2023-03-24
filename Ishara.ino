@@ -1,4 +1,3 @@
-///////////////////////////////////////////////////////my code edited (not full)/////////////////////////////
 #include <Wire.h>
 #include <Adafruit_GFX.h>
 #include <Adafruit_SSD1306.h>
@@ -141,6 +140,10 @@ int switchPinOne = 46;
 int switchPinTwo = 44; 
 int switchPinThree = 42; 
 
+int buttonOnePin = 52;     //change these values
+int buttonTwoPin = 50;  
+int buttonThreePin = 48; 
+
 ////////////////////////////////////////////////////////////////////
 
 
@@ -207,6 +210,9 @@ unsigned int MZstat = 0; // solving = 0; reach Maze End = 1
 
 int HelpingStage=0; 
 
+bool buttonOne = false;
+bool buttonTwo = false;
+bool buttonThree = false;
 
 //////////////////////////// Functions //////////////////////////////////
 
@@ -815,10 +821,10 @@ void MZmazeSolve(void)
   oled.println(MZmode);
   oled.display();               // show on OLED
 //////////////////////////////////////////////////////////////////////////////////////////
-            go(140,170);
-            go(140,170);
-            go(140,170);
-            go(140,170);
+            go(140,160);
+            go(140,160);
+            go(140,160);
+            go(140,160);
             
             MZmotorStop();
             delay(250);
@@ -829,10 +835,10 @@ void MZmazeSolve(void)
            
            MZfloorColor = "NO COLOR CHECKING ";
            if (MZmode == 'c'){
-              go(140,170);
-              go(140,170);
-              go(140,170);
-              go(140,170);
+              go(140,160);
+              go(140,160);
+              go(140,160);
+              go(140,160);
               MZmotorStop();
               delay(5000);
               MZfloorColor = FindColorFloor();
@@ -882,9 +888,9 @@ void MZmazeSolve(void)
              MZmotorStop();
              delay(500);
              //go(140,140);
-             go(140,170);
-             go(140,170);
-             go(140,170);
+             go(140,160);
+             go(140,160);
+             go(140,160);
             
              readLineSensors();
              MZreadLFSsensors();
@@ -892,8 +898,8 @@ void MZmazeSolve(void)
             if (MZmode == 'n') {MZgoAndTurn (90);MZmotorStop();delay(500);MZsettleLine(); MZrecIntersection('R');}
             else {
             go(130,150);
-            go(140,170);
-            go(140,170);  
+            go(140,160);
+            go(140,160);  
             MZrecIntersection('S');
             }
          }  
@@ -901,9 +907,9 @@ void MZmazeSolve(void)
           else if( MZmode=='l'){
             MZmotorStop();
             delay(500);
-            go(140,170);
-            go(140,170);
-            go(140,170);
+            go(140,160);
+            go(140,160);
+            go(140,160);
             MZgoAndTurn (270);
             //motorStop();
             //delay(500);
@@ -1196,7 +1202,7 @@ void pidLineFollower(){
   
   oled.display();
 
-  int base_speed = 140;  
+  int base_speed = 120;  
   int plus_speed = 80;
   int min_speed = 80;
 
@@ -1206,15 +1212,15 @@ void pidLineFollower(){
 
   //Check for Higher pid values to get to the line
   if(pid>100){
-    turnRight(200);
-    delay(250);
+    turnRight(200);   //200
+    delay(100);      //250
   }
-  else if(pid<-150){
-    turnLeft(200);
-    delay(250);
+  else if(pid<-100){
+    turnLeft(200);    //200
+    delay(100);      //250
   } 
   else{
-  base_speed = 140;  
+  base_speed = 120;  
   plus_speed = base_speed + pid;
   min_speed = base_speed - pid;
 
@@ -1375,6 +1381,7 @@ void readLineSensors(){
             inputVal[9]  = analogRead(ProxSensor_10);
             inputVal[10]  = analogRead(ProxSensor_11);
             inputVal[11]  = analogRead(ProxSensor_12);
+
             for (int i = 0; i<12; i++){  //Convert analog inputs to digital
                     if(inputVal[i]<500){   //200
                           inputVal[i] = 1;            
@@ -1384,9 +1391,12 @@ void readLineSensors(){
                     }
                     Serial.print(inputVal[i]);
                     Serial.print(" ");
+
             }
             Serial.println();
+
             
+
             // shift values
             for (int i = 0; i < NUM_SENSORS; i++) {
                   for (int j = NUM_VALUES - 1; j > 0; j--) {
@@ -1397,6 +1407,7 @@ void readLineSensors(){
                         //sensorValues[i][0] = analogRead(i);
                         sensorValues[i][0] = inputVal[i];
               }
+
             for (int i = 0; i<3; i++){      // for 3 sensor regions
                   lineSensorCount[i] = 0; //initial Value
                   for(int j = 0; j<4;  j++){
@@ -1985,6 +1996,7 @@ void thNodeAnalysis(){
           delay(1000);
           moveVerticalGripper(2);
           delay(1500);
+
      */ } 
   /*thPlacingTheBox++;
   if(thPlacingTheBox>1){
@@ -1993,7 +2005,7 @@ void thNodeAnalysis(){
   } */
 
   leftTurn180();
-  forward(150,130);    
+  forward(150,130);
   delay(150);
   Stop();
   settleLine();
@@ -2025,10 +2037,6 @@ void thPathFinder(){
   thMainDirection = readMagAngle();
   Serial.print("Main angle: ");
   Serial.println(thMainDirection);
-  moveVerticalGripper(2); //change later
-  delay(1500);
-  horizontalGripper(6);    //reset positions of the gripper
-  delay(1000);
 
   while(not thComplete){
       thStageManager();
@@ -2234,6 +2242,10 @@ void setup()
   pinMode(switchPinTwo, INPUT_PULLUP); // set the switch pin as input with internal pull-up resistor
   pinMode(switchPinThree, INPUT_PULLUP); // set the switch pin as input with internal pull-up resistor
 
+  pinMode(buttonOnePin, INPUT_PULLUP); // set the switch pin as input with internal pull-up resistor
+  pinMode(buttonTwoPin, INPUT_PULLUP); // set the switch pin as input with internal pull-up resistor
+  pinMode(buttonThreePin, INPUT_PULLUP); // set the switch pin as input with internal pull-up resistor
+
 
   if (!oled.begin(SSD1306_SWITCHCAPVCC, 0x3C)) {
           Serial.println(F("SSD1306 allocation failed"));
@@ -2347,9 +2359,28 @@ void setup()
   else{
         thUserInput01 = 1;
   }
+
   /////////////////////////////////
-  printToOled(10,String(thUserInput01));
-  delay(2000);  
+  
+  buttonOne = dipSwitchCheck(buttonOnePin);
+  buttonTwo = dipSwitchCheck(buttonTwoPin);
+  buttonThree = dipSwitchCheck(buttonThreePin);
+
+  oled.setCursor(0, 40);    
+  oled.print(buttonOne);
+  oled.print(" ");
+  oled.print(buttonTwo);
+  oled.print(" ");
+  oled.print(buttonThree);
+  oled.println(" ");
+  oled.display();
+  delay(2000);
+  
+  moveVerticalGripper(2); //change later
+  delay(1500);
+  horizontalGripper(6);    //reset positions of the gripper
+  delay(1000);
+
 
 
 
@@ -2358,8 +2389,13 @@ void setup()
 }
 
 void loop(){ 
-  HelpingStage = 10; //for th
-
+  //HelpingStage = 10; //for th
+if(buttonTwo){  // FOr calibration of magnetometer
+  int a = thCheckOrientation(thMainDirection);
+  printToOled(10,String(a));
+  delay(100);
+}  
+else{
 
 
   readLineSensors();  
@@ -2374,7 +2410,7 @@ void loop(){
   if (HelpingStage==0){
     MZreadLFSsensors();
     if(MZmode=='c'){ 
-        go(140,170);
+        go(140,160);
         delay(200);
     }
     else{
@@ -2389,10 +2425,10 @@ void loop(){
     // MZreadLFSsensors();
     
     // if(MZmode=='c'){ 
-    //     go(140,170);
-    //     go(140,170);
-    //     go(140,170);
-    //     go(140,170);
+    //     go(140,160);
+    //     go(140,160);
+    //     go(140,160);
+    //     go(140,160);
     //     MZmotorStop();
     //     delay(5000);   //Check color if needed
     //     MZgoAndTurn (90);
@@ -2422,7 +2458,18 @@ void loop(){
   }
 
   if(HelpingStage == 2){  //If green detected
-      turnRight(200);
+      forward(150,130);
+      delay(400);
+      if(buttonOne){
+          turnRight(200);
+          HelpingStage = 5;  // go to tower of hanoi
+      }
+      else{
+          turnLeft(200);
+          HelpingStage = 10; //Go to maze solving
+          MZpart = 1;
+
+      }
       delay(500);
       Stop();
       forward(150,130);
@@ -2441,10 +2488,13 @@ void loop(){
         pidStraightLineFollower();
       }
       settleLine();
-
-      HelpingStage = 5;  // go to tower of hanoi
+        
       
-  }
+      
+
+      
+}  
+  
  
 
  //////////////////////////////////////////  HelpingStage 5 - Tower Of Hanoi /////////////////////////////////////////////////////////
@@ -2485,9 +2535,9 @@ if(HelpingStage == 10){
     if(MZpart==0){
     MZmotorStop();
     delay(500);
-    go(140,170);
-    go(140,170);
-    go(140,170);
+    go(140,160);
+    go(140,160);
+    go(140,160);
       
     }
     MZmotorStop();
@@ -2498,13 +2548,10 @@ if(HelpingStage == 10){
     MZi=MZi+1;
     MZfloorColor = "NO COLOR CHECKING";
     if((MZpart==0)&& (MZmode=='c')){
-      go(140,170);
-      go(140,170);
       MZmotorStop();
       delay(5000);
-      
+      go(140,160);
       MZfloorColor = FindColorFloor();
-      MZmotorStop();
 ///////////////////////////////////////////////////////////////////////////////////////////
   oled.clearDisplay(); // clear display
   oled.setTextSize(1);          // text size
@@ -2514,8 +2561,6 @@ if(HelpingStage == 10){
   oled.println(MZfloorColor);
   oled.display();               // show on OLED
   //////////////////////////////////////////////////////////////////////////////////////////
-    
-      
       delay(5000);
       
     }
@@ -2567,6 +2612,7 @@ if(HelpingStage == 10){
       if (MZpart==2){
         /*mazeOptimization();
         i=0;
+
         // Second Pass: run the maze as fast as possible
         //mode = STOPPED;
         }
@@ -2600,3 +2646,7 @@ if(HelpingStage==20){
 }
 /////////////////////////////////////////   END OF LOOP  //////////////////////////////////////////////////////////////////////////////
 }
+}
+
+
+
