@@ -785,8 +785,8 @@ void ultrasonic_array(){
   */
   
   ultrasonic_distance[1]=get_distance(trigPin2,echoPin2);
-   if ((ultrasonic_distance[1]>=13)||(ultrasonic_distance[1]==0)){
-    ultrasonic_distance[1]=12;
+   if ((ultrasonic_distance[1]>=18)||(ultrasonic_distance[1]==0)){
+    ultrasonic_distance[1]=18;
     
     }
 
@@ -796,8 +796,8 @@ void ultrasonic_array(){
   Serial.println();
  */
   ultrasonic_distance[2]=get_distance(trigPin3,echoPin3);
-   if ((ultrasonic_distance[2]>=13)||(ultrasonic_distance[2]==0)){
-    ultrasonic_distance[2]=12;
+   if ((ultrasonic_distance[2]>=18)||(ultrasonic_distance[2]==0)){
+    ultrasonic_distance[2]=18;
     
     }
    /* 
@@ -807,8 +807,8 @@ void ultrasonic_array(){
   */
   
   ultrasonic_distance[3]=get_distance(trigPin4,echoPin4);
-   if ((ultrasonic_distance[3]>=5)||(ultrasonic_distance[3]==0)){
-    ultrasonic_distance[3]=5;
+   if ((ultrasonic_distance[3]>=10)||(ultrasonic_distance[3]==0)){
+    ultrasonic_distance[3]=10;
     
     }
     /*
@@ -817,8 +817,8 @@ void ultrasonic_array(){
   Serial.println();
   */
   ultrasonic_distance[4]=get_distance(trigPin5,echoPin5);
-   if ((ultrasonic_distance[4]>=5)||(ultrasonic_distance[4]==0)){
-    ultrasonic_distance[4]=5;
+   if ((ultrasonic_distance[4]>=10)||(ultrasonic_distance[4]==0)){
+    ultrasonic_distance[4]=10;
     
     }
     /*
@@ -828,8 +828,8 @@ void ultrasonic_array(){
   */
   
   ultrasonic_distance[5]=get_distance(trigPin6,echoPin6);
-   if ((ultrasonic_distance[5]>=50)||(ultrasonic_distance[5]==0)){
-    ultrasonic_distance[5]=50;
+   if ((ultrasonic_distance[5]>=100)||(ultrasonic_distance[5]==0)){
+    ultrasonic_distance[5]=100;
     
     }
     /*
@@ -839,8 +839,8 @@ void ultrasonic_array(){
   */
   
   ultrasonic_distance[6]=get_distance(trigPin7,echoPin7);
-   if ((ultrasonic_distance[6]>=50)||(ultrasonic_distance[6]==0)){
-    ultrasonic_distance[6]=50;
+   if ((ultrasonic_distance[6]>=100)||(ultrasonic_distance[6]==0)){
+    ultrasonic_distance[6]=100;
     
     }
     /*
@@ -1331,39 +1331,46 @@ void MZmazeSolve(void)
             turnLeft(200);
             delay(500);
             Stop();
+            delay(300);
             forward(150,130);
             delay(200);
             Stop();
+            delay(300);
             readLineSensors();
             while (not (lineSensorCount[0]+lineSensorCount[1]+lineSensorCount[2]>=2)){
               reverse(150,130);
               delay(200);
               Stop();
+              delay(300);
               turnRight(200);
               delay(500);
               Stop();
+              delay(300);
               forward(150,130);
               delay(200);
               Stop();
+              delay(300);
               readLineSensors();
                }
-              settleLine();
-              forward(150,130);
-              delay(500);
-              Stop();
-
-              
-            
-            
+              // settleLine();
+              // forward(150,130);
+              // delay(500);
+              // Stop();
             settleLine();
             for(int i =0; i<4;i++){
               pidLineFollower();
             }
             settleLine();
-            for(int i =0; i<4;i++){
+            readLineSensors();
+            while(lineSensorCount[0]+lineSensorCount[1]+lineSensorCount[2]!=0){
               pidLineFollower();
+              readLineSensors();
             }
-            settleLine();
+            
+            // for(int i =0; i<4;i++){
+            //   pidLineFollower();
+            // }
+            // settleLine();
             
             /////////////////////////////////////////////// NEXT CODE WILL CALL ///////////////////
             HelpingStage = 15;
@@ -2826,6 +2833,574 @@ void beepBuz(){
 
 } 
 
+//////////////////////////////////////////////////////////
+void Obstacle_Avoidance_and_Line_Detection(){
+  while (1!=0){
+    readLineSensors();
+    if((inputVal[0]==1)||(inputVal[11]==1)){
+      ultrasonic_part=1;
+      break;
+
+    }
+    
+  ultrasonic_array();
+  
+ 
+  
+  
+   if (ultrasonic_distance[0]<=25){
+        Stop();
+        delay(600);
+      if((ultrasonic_distance[3]==8)&&(ultrasonic_distance[4]==8)){
+       if (ultrasonic_distance[1]<ultrasonic_distance[2]){
+        // reverse(130,130);
+        // delay(300);
+        turnRight(175);
+        delay(10);
+
+        // while(ultrasonic_distance[5]!=50){
+        //   forward(150,150);
+        // }
+        // turnLeft(175);
+        // delay(700);
+                
+       
+        
+       
+      }
+        
+        
+        
+        
+
+        
+        
+
+        
+         else if (ultrasonic_distance[1]>ultrasonic_distance[2]){
+          // reverse(130,130);
+          // delay(300);
+          turnLeft(175);
+          delay(10);
+          
+        }
+       
+      }
+      else if((ultrasonic_distance[1]<5)||(ultrasonic_distance[2]<5)){
+        reverse(150,150);
+      }
+          
+   
+        
+       else if (ultrasonic_distance[3]>ultrasonic_distance[4]){
+            turnLeft(175);
+             delay(10);
+
+        }
+      else if (ultrasonic_distance[3]<ultrasonic_distance[4]){
+            turnRight(175);
+            delay(10);
+           
+
+            }
+    //   // else if (ultrasonic_distance[5]>ultrasonic_distance[6]){
+    //   //     turnLeft(175);
+    //   //    delay(900);
+    //   // }
+    //   // else if(ultrasonic_distance[5]<ultrasonic_distance[6]){
+    //   //   turnRight(175);
+    //   //    delay(900);
+
+    //   // }
+      else{
+        // reverse(120,120);
+        // delay(300);
+        forward(150,150);
+        delay(10);
+        turnRight(175);
+        delay(10);
+        }
+}
+      
+    
+  else if((ultrasonic_distance[1]<5)||(ultrasonic_distance[2]<5)){
+        reverse(150,150);
+      }
+     else if ((ultrasonic_distance[3])<(ultrasonic_distance[4])){
+       turnRight(150);
+       delay(10);
+     }
+
+       else if ((ultrasonic_distance[3])>(ultrasonic_distance[4])){
+       turnLeft(150);
+       delay(10);
+       }
+
+    else if (ultrasonic_distance[1]>ultrasonic_distance[2]){
+         turnLeft(150);
+         delay(10);
+         
+         
+
+        
+
+        
+        
+
+
+
+
+     }
+    
+        else if (ultrasonic_distance[1]<ultrasonic_distance[2]){
+        turnRight(150);
+        delay(10);
+        
+        }
+        
+
+
+    //   }
+    // else if (ultrasonic_distance[3]<ultrasonic_distance[4]){
+        
+    //       turnLeft(175);
+    //       delay(700);
+          
+          
+    //     }
+        
+
+
+    
+
+    // else if (ultrasonic_distance[3]>ultrasonic_distance[4]){
+       
+    //       turnRight(175);
+    //       delay(700);
+        
+
+
+    //  }
+    
+
+    else{
+
+      forward(150,150);
+      
+    }
+
+//    
+//    oled.clearDisplay();
+//  oled.setTextSize(1);      
+//  oled.setTextColor(WHITE);
+//  oled.setCursor(0, 10);   
+//  oled.println("Team Spectro");
+//  oled.setCursor(0, 30);    
+//  oled.print(distance3);
+//  oled.print("  ");
+//  oled.print(distance4);
+//   oled.print("  ");
+//   oled.print(ultrasonic_distance[0]);
+//   oled.print("  ");
+//   oled.print(ultrasonic_distance[1]);
+//   oled.print("  ");
+//   oled.print(ultrasonic_distance[2]);
+//   oled.print("  ");
+//   oled.print(ultrasonic_distance[3]);
+//   oled.print("  ");
+//   oled.print(ultrasonic_distance[4]);
+//   oled.print("  ");
+//   oled.print(ultrasonic_distance[5]);
+//   oled.print("  ");
+//   oled.print(ultrasonic_distance[6]);
+//   oled.print("  ");
+// 
+// 
+//   
+// 
+//   
+//   oled.display();
+   
+}
+int ultrasonic_count=0;
+while(1!=0){
+  
+    if(ultrasonic_part==1){
+    readLineSensors();
+//    oled.clearDisplay();
+//  oled.setTextSize(1);      
+//  oled.setTextColor(WHITE);
+//  oled.setCursor(0, 10);   
+//  oled.println("Team Spectro");
+//  oled.setCursor(0, 30); 
+//     
+//  oled.print(inputVal[0]);
+//  oled.print(" ");
+//  oled.print(inputVal[1]);
+//  oled.print(" ");
+//  oled.print(inputVal[2]);
+//  oled.print(" ");
+//  oled.print(inputVal[3]);
+//  oled.print(" ");
+//  oled.print(inputVal[4]);
+//  oled.print(" ");
+//  oled.print(inputVal[5]);
+//  oled.print(" ");
+//  oled.print(inputVal[6]);
+//  oled.print(" ");
+//  oled.print(inputVal[7]);
+//  oled.print(" ");
+//  oled.print(inputVal[8]);
+//  oled.print(" ");
+//  oled.print(inputVal[9]);
+//  oled.print(" ");
+//  oled.print(inputVal[10]);
+//  oled.print(" ");
+//  oled.print(inputVal[11]);
+//  oled.print(" ");
+  
+ //   oled.display();
+    
+    for (int i=0;i<12;i++){
+      ultrasonic_count+=inputVal[i];
+    }
+//    if (ultrasonic_count<=5){
+//      Stop();
+//      delay(1000);
+//      while(true){
+//        readLineSensors();
+//         if((inputVal[0]==1)&&(inputVal[11]==0)){
+//          turnRight(175);
+//          delay(200);
+//
+//      }
+//      if ((inputVal[11]==1)&&(inputVal[0]==0)){
+//        turnLeft(175);
+//        delay(200);
+//      }
+//      if((inputVal[11]==1)&&(inputVal[0]==1)){
+//        Stop();
+//        delay(2000);
+//        break;
+//      }
+//    }
+//    ultrasonic_part=2;
+//    }
+    if(ultrasonic_count<=5){
+      Stop();
+      delay(1000);
+      while(true){
+        readLineSensors();
+      if((inputVal[0]==1)&&(inputVal[11]==0)){
+          turnRight(175);
+          delay(190);
+
+      }
+      if ((inputVal[11]==1)&&(inputVal[0]==0)){
+        turnLeft(175);
+        delay(190);
+      }
+      if((inputVal[11]==1)&&(inputVal[0]==1)){
+        Stop();
+        delay(2000);
+        break;
+      }
+      }
+      ultrasonic_part=2;
+      }
+    if (ultrasonic_count>=6){
+      Stop();
+      delay(1000);
+      while(true){
+        readLineSensors();
+      if((inputVal[0]==1)&&(inputVal[11]==0)){
+          turnRight(175);
+          delay(150);
+
+      }
+      if ((inputVal[11]==1)&&(inputVal[0]==0)){
+        turnLeft(175);
+        delay(150);
+      }
+      if((inputVal[11]==1)&&(inputVal[0]==1)){
+        Stop();
+        delay(2000);
+        break;
+      }
+    }
+    
+    // Stop();
+    // delay(3000);
+    ultrasonic_part=2;
+    }
+    }
+    if (ultrasonic_part==2){
+     
+    
+    while(true){
+      HCSR04 hc_front_1(trigPin4,echoPin4);
+      distance3=hc_front_1.dist();
+      HCSR04 hc_front_21(trigPin5,echoPin5);
+      distance4=hc_front_21.dist();
+
+
+    if ((distance3==50)||(distance3==0)){
+      distance3==50;
+    }
+    if ((distance4==50)||(distance4==0)){
+      distance4==50;
+    }
+    oled.clearDisplay();
+  oled.setTextSize(1);      
+  oled.setTextColor(WHITE);
+  oled.setCursor(0, 10);   
+  oled.println("Team Spectro");
+  oled.setCursor(0, 30);    
+  oled.print(distance5);
+  oled.print("  ");
+  oled.print(distance6);
+   oled.print("  ");
+    oled.display();
+
+
+      if(ultrasonic_distance[1]<ultrasonic_distance[2]){
+        turnLeft(175);
+        delay(10);
+    }
+    if(ultrasonic_distance[1]>ultrasonic_distance[2]){
+        turnLeft(175);
+        delay(10);
+    }
+      // forward(150,130);
+      if(ultrasonic_distance[5]<ultrasonic_distance[6]){
+        errorD=(ultrasonic_distance[6]-ultrasonic_distance[5]);
+        derivative=errorD-previous_errorD;
+        integral+=errorD;
+        PID_ErrorD=(USKp*errorD+USKd*errorD+USKi*errorD);
+        previous_errorD=errorD;
+        left_motor_speed=150+PID_ErrorD;
+        right_motor_speed=150-PID_ErrorD;
+        if (left_motor_speed>=MAX_SPEED){
+            left_motor_speed=MAX_SPEED;
+        }
+        if (right_motor_speed>=MAX_SPEED){
+          right_motor_speed=MAX_SPEED;
+        }
+        if (left_motor_speed<=MIN_SPEED){
+          left_motor_speed=MIN_SPEED;
+        }
+        if (right_motor_speed<=MIN_SPEED){
+          right_motor_speed=MIN_SPEED;
+        }
+        analogWrite(enA,left_motor_speed);
+        analogWrite(enB,right_motor_speed);
+        digitalWrite(in1,HIGH);
+        digitalWrite(in2,LOW);
+        digitalWrite(in3,HIGH);
+        digitalWrite(in4,LOW);
+        
+
+       
+      }
+       if(ultrasonic_distance[5]>ultrasonic_distance[6]){
+        errorD1=(ultrasonic_distance[6]-ultrasonic_distance[5]);
+    //     error2=(REFERENCE_DISTANCE-ultrasonic_distance[6]);
+    //     errorD1=(error1+error2)/2;
+        derivative1=errorD1-previous_errorD1;
+        integral1+=errorD1;
+        PID_ErrorD1=(USKp*errorD1+USKd*errorD1+USKi*errorD1);
+        previous_errorD1=errorD1;
+    //     // if(ultrasonic_distance[6]==50){
+    //     //   turnRight(175);
+    //     //   delay(700);
+    //     // }
+
+        left_motor_speed=150+PID_ErrorD1;
+        right_motor_speed=150-PID_ErrorD1;
+        if (left_motor_speed>=MAX_SPEED){
+            left_motor_speed=MAX_SPEED;
+        }
+        if (right_motor_speed>=MAX_SPEED){
+          right_motor_speed=MAX_SPEED;
+        }
+        if (left_motor_speed<=MIN_SPEED){
+          left_motor_speed=MIN_SPEED;
+        }
+        if (right_motor_speed<=MIN_SPEED){
+          right_motor_speed=MIN_SPEED;
+        }
+        
+        analogWrite(enA,left_motor_speed);
+        analogWrite(enB,right_motor_speed);
+        digitalWrite(in1,HIGH);
+        digitalWrite(in2,LOW);
+        digitalWrite(in3,HIGH);
+        digitalWrite(in4,LOW);
+
+      }
+      
+      if((distance3>=50)&&(distance4>=50)){
+        Stop();
+        delay(500);
+        ultrasonic_part=3;
+        break;
+       
+        
+      }
+    }
+    }
+    
+    // }
+   
+
+ 
+
+    
+    // if(ultrasonic_part==3){
+    //   Stop();
+    //   delay(2000);
+    //   readLineSensors();
+    // ultrasonic_count=0;
+    // for (int i=0;i<12;i++){
+    //   ultrasonic_count+=inputVal[i];
+      
+    // }
+
+    
+    //  while(true){
+      
+    //  if((inputVal[0]==0)&&(inputVal[11]==1)){
+    //       turnRight(175);
+    //       delay(40);
+    //  }
+    //  if((inputVal[0]==1)&&(inputVal[11]==0)){
+    //       turnLeft(175);
+    //       delay(40);
+    //  }
+    //  if((inputVal[0]==0)&&(inputVal[11]==0)){
+    //    Stop();
+    //    delay(2000);
+    //    ultrasonic_part=4;
+    //    break;
+    //  }
+     
+
+    // } 
+    // }
+    if(ultrasonic_part==3){
+      readLineSensors();
+      Stop();
+      delay(1000);
+      if((inputVal[0]==1)||(inputVal[1]==1)||(inputVal[2]==1)||(inputVal[3]==1)||(inputVal[4]==1)||(inputVal[5]==1)||(inputVal[6]==1)||(inputVal[7]==1)||(inputVal[8]==1)||(inputVal[9]==1)||(inputVal[10]==1)||(inputVal[11]==1)){
+        Stop();
+        delay(1000);
+        break;
+      }
+
+    }
+    
+
+        
+              
+           
+           
+        // if (distance3<distance4){
+        //   turnRight(175);
+        //   delay(600);
+        //   readLineSensors();
+        //   while (inputVal[11]!=1){
+        //     readLineSensors();
+        //     forward(150,150);
+        //   }
+        //   oled.clearDisplay();
+        //   oled.setTextSize(1);      
+        //   oled.setTextColor(WHITE);
+        //   oled.setCursor(0, 10);   
+        //   oled.println("Team Spectro");
+        //   oled.setCursor(0, 30); 
+        //   oled.print("HI HOW ARE YOU");
+        //   Stop();
+        //   delay(1000);
+        //   if(inputVal[11]==1){
+        //     Stop();
+        //     turnLeft(175);
+        //     delay(600);
+                
+        //   }
+              
+        // }
+        // if (distance3>distance4){
+        //   turnLeft(175);
+        //   delay(600);
+        //   readLineSensors();
+        //   while (inputVal[0]!=0){
+        //     readLineSensors();
+        //     forward(150,150);
+        //   }
+        //   if (inputVal[0]==1){
+        //     Stop();
+        //     delay(10000);
+        //     turnRight(175);
+        //     delay(600);
+                
+        //   }
+        // }
+      
+    
+           
+
+oled.clearDisplay();
+  oled.setTextSize(1);      
+  oled.setTextColor(WHITE);
+  oled.setCursor(0, 10);   
+  oled.println("Team Spectro");
+  oled.setCursor(0, 30);    
+  oled.print(distance3);
+  oled.print("  ");
+  oled.print(distance4);
+   oled.print("  ");
+    oled.display();
+}
+
+  }
+
+/////////////////////////////////////////////////////
+void Check_Turn_Direction(){
+  Stop();
+  delay(2000);
+  ultrasonic_array();
+  while(ultrasonic_distance[0]>=24){
+    ultrasonic_array();
+    forward(150,150);
+  }
+  
+  
+  HCSR04 hc_left_2(trigPin6,echoPin6);
+  distance5=hc_left_2.dist();
+  HCSR04 hc_right_2(trigPin7,echoPin7);
+  distance6=hc_right_2.dist();
+  
+  if((distance5==100)||(distance5==0)){
+    distance5=100;
+  }
+  if((distance6==100)||(distance6==0)){
+    distance6=100;
+  }
+   
+  
+  if (distance5<distance6){
+    turnRight(175);
+    delay(600);
+    Stop();
+    delay(1000);
+  }
+  if (distance5>distance6){
+    turnLeft(175);
+    delay(600);
+    Stop();
+    delay(1000);
+  }
+  }
 
 
 
@@ -2833,7 +3408,7 @@ void beepBuz(){
 
 void setup() 
 {    
-  MZpart = 1;
+  MZpart = 0;
   HelpingStage = 10;  
   Serial.begin(9600);           
   Gripper.attach(38); //servo gripper         
@@ -3127,6 +3702,13 @@ else{
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////  HelpingStage 3 - Maze Area ///////////////////////////////////////////////////////////////
 if(HelpingStage == 10){
+  if(MZpart == 0){
+    forward(150,130);
+    delay(1500);
+    Stop();
+    MZpart = 1;
+  }
+  
 
   //beepBuz();
   oled.clearDisplay(); // clear display
@@ -3251,655 +3833,10 @@ if(HelpingStage == 10){
 //////////////////////////////////////////  HelpingStage 4 - Object Avoidance /////////////////////////////////////////////////////////
 if(HelpingStage==15){
   // object awoidance
-  Stop();
-  delay(2000);
-  ultrasonic_array();
-  while(ultrasonic_distance[0]>20){
-    ultrasonic_array();
-    forward(150,150);
-  }
-  
-  HCSR04 hc_front_1(trigPin4,echoPin4);
-  distance3=hc_front_1.dist();
-  HCSR04 hc_front_21(trigPin5,echoPin5);
-  distance4=hc_front_21.dist();
-  
-  if((distance3==100)||(distance3==0)){
-    distance3=100;
-  }
-  if((distance4==100)||(distance4==0)){
-    distance4=100;
-  }
-   oled.clearDisplay();
-  oled.setTextSize(1);      
-  oled.setTextColor(WHITE);
-  oled.setCursor(0, 10);   
-  oled.println("Team Spectro");
-  oled.setCursor(0, 30); 
-  oled.print(distance3);
-  oled.print("  ");
-  oled.print(distance4);
-  oled.print("  ");
-  oled.display();
-  if (distance3<distance4){
-    turnRight(175);
-    delay(700);
-  }
-  if (distance3>distance4){
-    turnLeft(175);
-    delay(700);
-  }
-  while (1!=0){
-    readLineSensors();
-    if((inputVal[0]==1)||(inputVal[11]==1)){
-      ultrasonic_part=1;
-      break;
-
-    }
-    // readLineSensors();
-    // for (int i=0;i<12;i++){
-    //   ultrasonic_count+=inputVal[i];
-    // }
-    // if (ultrasonic_count>=6){
-    //   Stop();
-    //   if((inputVal[0]==1)&&(inputVal[11]==0)){
-    //       turnRight(175);
-    //       delay(30);
-
-    //   }
-    //   if ((inputVal[11]==1)&&(inputVal[0]==0)){
-    //     turnLeft(175);
-    //     delay(30);
-    //   }
-    // }
-    // if (ultrasonic_count==12){
-    //   forward(150,150);
-      
-    //     if((inputVal[0]==0)||(inputVal[11]==0)){
-    //       Stop();
-    //       delay(500);
-    //        distance6=get_distance(trigPin7,echoPin7);
-    //        distance5=get_distance(trigPin6,echoPin6);
-    //        if((distance5==50)||(distance5==0)){
-    //          distance5==50;
-    //        }
-    //        if((distance6==50)||(distance6==0)){
-    //          distance6==50;
-    //        }
-    //        if (distance5<distance6){
-    //          turnRight(175);
-    //          delay(700);
-    //          readLineSensors();
-    //          while (inputVal[11]>=0){
-    //             readLineSensors();
-    //             forward(150,150);
-    //          }
-    //          if(inputVal[11]==1){
-    //            Stop();
-    //            turnLeft(175);
-    //            delay(700);
-               
-    //          }
-             
-    //        }
-    //        if (distance5>distance6){
-    //          turnLeft(175);
-    //          delay(700);
-    //          readLineSensors();
-    //          while (inputVal[0>=0]){
-    //            readLineSensors();
-    //            forward(150,150);
-    //          }
-    //          if (inputVal[0]==1){
-    //            Stop();
-    //            turnRight(175);
-    //            delay(700);
-               
-    //          }
-    //        }
-           
-        
-    //   }
-
-    // }
+  beepBuz();
+  Check_Turn_Direction();
+  Obstacle_Avoidance_and_Line_Detection();
     
-      // else{
-      //   distance6=get_distance(trigPin7,echoPin7);
-      //   distance5=get_distance(trigPin6,echoPin6);
-      //   if((distance5==50)||(distance5==0)){
-      //       distance5==50;
-      // }
-      // if((distance6==50)||(distance5==0)){
-      //       distance6==50;
-      // }
-     
-  
-  ultrasonic_array();
-  
- 
-  
-  
-   if (ultrasonic_distance[0]<=25){
-        Stop();
-        delay(600);
-      if((ultrasonic_distance[3]==10)&&(ultrasonic_distance[4]==10)){
-       if (ultrasonic_distance[1]<ultrasonic_distance[2]){
-        // reverse(130,130);
-        // delay(300);
-        turnRight(175);
-        delay(10);
-
-        // while(ultrasonic_distance[5]!=50){
-        //   forward(150,150);
-        // }
-        // turnLeft(175);
-        // delay(700);
-                
-
-      }
-        
-
-        
-         else if (ultrasonic_distance[1]>ultrasonic_distance[2]){
-          // reverse(130,130);
-          // delay(300);
-          turnLeft(175);
-          delay(10);
-          
-        }
-       
-      }
-      else if((ultrasonic_distance[1]<5)||(ultrasonic_distance[2]<5)){
-        reverse(150,150);
-      }
-          
-   
-        
-       else if (ultrasonic_distance[3]>ultrasonic_distance[4]){
-            turnLeft(175);
-             delay(10);
-
-        }
-      else if (ultrasonic_distance[3]<ultrasonic_distance[4]){
-            turnRight(175);
-            delay(10);
-           
-
-            }
-    //   // else if (ultrasonic_distance[5]>ultrasonic_distance[6]){
-    //   //     turnLeft(175);
-    //   //    delay(900);
-    //   // }
-    //   // else if(ultrasonic_distance[5]<ultrasonic_distance[6]){
-    //   //   turnRight(175);
-    //   //    delay(900);
-
-    //   // }
-      else{
-        // reverse(120,120);
-        // delay(300);
-        turnRight(175);
-        delay(10);
-        
-        }
-  }
-      
-    // else if ((ultrasonic_distance[3]+ultrasonic_distance[5])<(ultrasonic_distance[4]+ultrasonic_distance[6])){
-    //     error3=(REFERENCE_DISTANCE-ultrasonic_distance[3]);
-    //     error4=(REFERENCE_DISTANCE-ultrasonic_distance[5]);
-    //     errorD2=(error3+error4)/2;
-    //     derivative2=errorD2-previous_errorD2;
-    //     integral2+=errorD2;
-    //     PID_ErrorD2=(USKp*errorD2+USKd*errorD2+USKi*errorD2);
-    //     previous_errorD2=errorD2;
-       
-
-    //     left_motor_speed=initial_speed+PID_ErrorD2;
-    //     right_motor_speed=initial_speed-PID_ErrorD2;
-    //     if (left_motor_speed>=MAX_SPEED){
-    //         left_motor_speed=MAX_SPEED;
-    //     }
-    //     if (right_motor_speed>=MAX_SPEED){
-    //       right_motor_speed=MAX_SPEED;
-    //     }
-    //     if (left_motor_speed<=MIN_SPEED){
-    //       left_motor_speed=MIN_SPEED;
-    //     }
-    //     if (right_motor_speed<=MIN_SPEED){
-    //       right_motor_speed=MIN_SPEED;
-    //     }
-    //     analogWrite(enA,left_motor_speed);
-    //     analogWrite(enB,right_motor_speed);
-    //     digitalWrite(in1,HIGH);
-    //     digitalWrite(in2,LOW);
-    //     digitalWrite(in3,HIGH);
-    //     digitalWrite(in4,LOW);
-        
-
-
-    // }
-    // else if ((ultrasonic_distance[3]+ultrasonic_distance[5])>(ultrasonic_distance[4]+ultrasonic_distance[6])){
-    //     error1=(REFERENCE_DISTANCE-ultrasonic_distance[4]);
-    //     error2=(REFERENCE_DISTANCE-ultrasonic_distance[6]);
-    //     errorD1=(error1+error2)/2;
-    //     derivative1=errorD1-previous_errorD1;
-    //     integral1+=errorD1;
-    //     PID_ErrorD1=(USKp*errorD1+USKd*errorD1+USKi*errorD1);
-    //     previous_errorD1=errorD1;
-    //     // if(ultrasonic_distance[6]==50){
-    //     //   turnRight(175);
-    //     //   delay(700);
-    //     // }
-
-    //     left_motor_speed=initial_speed-PID_ErrorD1;
-    //     right_motor_speed=initial_speed+PID_ErrorD1;
-    //     if (left_motor_speed>=MAX_SPEED){
-    //         left_motor_speed=MAX_SPEED;
-    //     }
-    //     if (right_motor_speed>=MAX_SPEED){
-    //       right_motor_speed=MAX_SPEED;
-    //     }
-    //     if (left_motor_speed<=MIN_SPEED){
-    //       left_motor_speed=MIN_SPEED;
-    //     }
-    //     if (right_motor_speed<=MIN_SPEED){
-    //       right_motor_speed=MIN_SPEED;
-    //     }
-        
-    //     analogWrite(enA,left_motor_speed);
-    //     analogWrite(enB,right_motor_speed);
-    //     digitalWrite(in1,HIGH);
-    //     digitalWrite(in2,LOW);
-    //     digitalWrite(in3,HIGH);
-    //     digitalWrite(in4,LOW);
-
-
-
-    // }
-
-  else if((ultrasonic_distance[1]<5)||(ultrasonic_distance[2]<5)){
-        reverse(150,150);
-      }
-     else if ((ultrasonic_distance[3])<(ultrasonic_distance[4])){
-       turnRight(175);
-       delay(10);
-     }
-
-       else if ((ultrasonic_distance[3])>(ultrasonic_distance[4])){
-       turnLeft(175);
-       delay(10);
-       }
-
-    else if (ultrasonic_distance[1]>ultrasonic_distance[2]){
-         turnLeft(175);
-         delay(10);
-
-     }
-    
-        else if (ultrasonic_distance[1]<ultrasonic_distance[2]){
-        turnRight(175);
-        delay(10);
-        
-        }
-
-    //   }
-    // else if (ultrasonic_distance[3]<ultrasonic_distance[4]){
-        
-    //       turnLeft(175);
-    //       delay(700);
-          
-          
-    //     }
-        
-
-
-    
-
-    // else if (ultrasonic_distance[3]>ultrasonic_distance[4]){
-       
-    //       turnRight(175);
-    //       delay(700);
-        
-
-
-    //  }
-    
-
-    else{
-
-      forward(150,140);
-      
-    }
-
-    
-    oled.clearDisplay();
-    oled.setTextSize(1);      
-    oled.setTextColor(WHITE);
-    oled.setCursor(0, 10);   
-    oled.println("Team Spectro");
-    oled.setCursor(0, 30);    
-    oled.print(distance3);
-    oled.print("  ");
-    oled.print(distance4);
-   oled.print("  ");
-   oled.print(ultrasonic_distance[0]);
-   oled.print("  ");
-   oled.print(ultrasonic_distance[1]);
-   oled.print("  ");
-   oled.print(ultrasonic_distance[2]);
-   oled.print("  ");
-   oled.print(ultrasonic_distance[3]);
-   oled.print("  ");
-   oled.print(ultrasonic_distance[4]);
-   oled.print("  ");
-   oled.print(ultrasonic_distance[5]);
-   oled.print("  ");
-   oled.print(ultrasonic_distance[6]);
-   oled.print("  ");
-   oled.print(PID_ErrorD1);
-   oled.print("  ");
-   oled.print(PID_ErrorD2);
-   oled.print("  ");
- 
-   
- 
-   
-   oled.display();
-   
-}
-int ultrasonic_count=0;
-while(1!=0){
-  
-    if(ultrasonic_part==1){
-    readLineSensors();
-    oled.clearDisplay();
-  oled.setTextSize(1);      
-  oled.setTextColor(WHITE);
-  oled.setCursor(0, 10);   
-  oled.println("Team Spectro");
-  oled.setCursor(0, 30); 
-     
-  oled.print(inputVal[0]);
-  oled.print(" ");
-  oled.print(inputVal[1]);
-  oled.print(" ");
-  oled.print(inputVal[2]);
-  oled.print(" ");
-  oled.print(inputVal[3]);
-  oled.print(" ");
-  oled.print(inputVal[4]);
-  oled.print(" ");
-  oled.print(inputVal[5]);
-  oled.print(" ");
-  oled.print(inputVal[6]);
-  oled.print(" ");
-  oled.print(inputVal[7]);
-  oled.print(" ");
-  oled.print(inputVal[8]);
-  oled.print(" ");
-  oled.print(inputVal[9]);
-  oled.print(" ");
-  oled.print(inputVal[10]);
-  oled.print(" ");
-  oled.print(inputVal[11]);
-  oled.print(" ");
-  
-    oled.display();
-    
-    for (int i=0;i<12;i++){
-      ultrasonic_count+=inputVal[i];
-    }
-    if (ultrasonic_count>=6){
-      Stop();
-      while(true){
-        readLineSensors();
-      if((inputVal[0]==1)&&(inputVal[11]==0)){
-          turnRight(175);
-          delay(40);
-
-      }
-      if ((inputVal[11]==1)&&(inputVal[0]==0)){
-        turnLeft(175);
-        delay(40);
-      }
-      if((inputVal[11]==1)&&(inputVal[0]==1)){
-        Stop();
-        delay(2000);
-        break;
-      }
-    }
-    
-    Stop();
-    delay(3000);
-    ultrasonic_part=2;
-    }
-    }
-    if (ultrasonic_part==2){
-     
-    // ultrasonic_count=0;
-    // for (int i=0;i<12;i++){
-    //   ultrasonic_count+=inputVal[i];
-    // }
-    // if (ultrasonic_count>=10){
-      while(true){
-      HCSR04 hc_front_1(trigPin4,echoPin4);
-   distance5=hc_front_1.dist();
-  HCSR04 hc_front_21(trigPin5,echoPin5);
-  distance6=hc_front_21.dist();
-
-
-    if ((distance5==50)||(distance5==0)){
-      distance5==50;
-    }
-    if ((distance6==50)||(distance6==0)){
-      distance6==50;
-    }
-    oled.clearDisplay();
-  oled.setTextSize(1);      
-  oled.setTextColor(WHITE);
-  oled.setCursor(0, 10);   
-  oled.println("Team Spectro");
-  oled.setCursor(0, 30);    
-  oled.print(distance5);
-  oled.print("  ");
-  oled.print(distance6);
-   oled.print("  ");
-    oled.display();
-
-
-      if(ultrasonic_distance[1]<ultrasonic_distance[2]){
-        turnLeft(175);
-        delay(20);
-    }
-    if(ultrasonic_distance[1]>ultrasonic_distance[2]){
-        turnLeft(175);
-        delay(20);
-    }
-      // forward(150,130);
-      if(distance5<distance6){
-        errorD=(distance6-distance5);
-        derivative=errorD-previous_errorD;
-        integral+=errorD;
-        PID_ErrorD=(USKp*errorD+USKd*errorD+USKi*errorD);
-        previous_errorD=errorD;
-        left_motor_speed=150+PID_ErrorD;
-        right_motor_speed=140-PID_ErrorD;
-        if (left_motor_speed>=MAX_SPEED){
-            left_motor_speed=MAX_SPEED;
-        }
-        if (right_motor_speed>=MAX_SPEED){
-          right_motor_speed=MAX_SPEED;
-        }
-        if (left_motor_speed<=MIN_SPEED){
-          left_motor_speed=MIN_SPEED;
-        }
-        if (right_motor_speed<=MIN_SPEED){
-          right_motor_speed=MIN_SPEED;
-        }
-        analogWrite(enA,left_motor_speed);
-        analogWrite(enB,right_motor_speed);
-        digitalWrite(in1,HIGH);
-        digitalWrite(in2,LOW);
-        digitalWrite(in3,HIGH);
-        digitalWrite(in4,LOW);
-        
-
-       
-      }
-       if(distance5>distance6){
-        errorD1=(distance6-distance5);
-    //     error2=(REFERENCE_DISTANCE-ultrasonic_distance[6]);
-    //     errorD1=(error1+error2)/2;
-        derivative1=errorD1-previous_errorD1;
-        integral1+=errorD1;
-        PID_ErrorD1=(USKp*errorD1+USKd*errorD1+USKi*errorD1);
-        previous_errorD1=errorD1;
-    //     // if(ultrasonic_distance[6]==50){
-    //     //   turnRight(175);
-    //     //   delay(700);
-    //     // }
-
-        left_motor_speed=150+PID_ErrorD1;
-        right_motor_speed=140-PID_ErrorD1;
-        if (left_motor_speed>=MAX_SPEED){
-            left_motor_speed=MAX_SPEED;
-        }
-        if (right_motor_speed>=MAX_SPEED){
-          right_motor_speed=MAX_SPEED;
-        }
-        if (left_motor_speed<=MIN_SPEED){
-          left_motor_speed=MIN_SPEED;
-        }
-        if (right_motor_speed<=MIN_SPEED){
-          right_motor_speed=MIN_SPEED;
-        }
-        
-        analogWrite(enA,left_motor_speed);
-        analogWrite(enB,right_motor_speed);
-        digitalWrite(in1,HIGH);
-        digitalWrite(in2,LOW);
-        digitalWrite(in3,HIGH);
-        digitalWrite(in4,LOW);
-
-      }
-      if((distance5>=50)&&(distance6>=50)){
-        ultrasonic_part=3;
-      }
-    }
-    }
-    // }
-   
-
- 
-
-    
-    // if(ultrasonic_part==3){
-    //   Stop();
-    //   delay(2000);
-    //   readLineSensors();
-    // ultrasonic_count=0;
-    // for (int i=0;i<12;i++){
-    //   ultrasonic_count+=inputVal[i];
-      
-    // }
-
-    
-    //  while(true){
-      
-    //  if((inputVal[0]==0)&&(inputVal[11]==1)){
-    //       turnRight(175);
-    //       delay(40);
-    //  }
-    //  if((inputVal[0]==1)&&(inputVal[11]==0)){
-    //       turnLeft(175);
-    //       delay(40);
-    //  }
-    //  if((inputVal[0]==0)&&(inputVal[11]==0)){
-    //    Stop();
-    //    delay(2000);
-    //    ultrasonic_part=4;
-    //    break;
-    //  }
-     
-
-    // } 
-    // }
-   if(ultrasonic_part==3){
-     Stop();
-     delay(500);
-      readLineSensors();
-      if((inputVal[0]==1)||(inputVal[1]==1)||(inputVal[2]==1)||(inputVal[3]==1)||(inputVal[4]==1)||(inputVal[5]==1)||(inputVal[6]==1)||(inputVal[7]==1)||(inputVal[8]==1)||(inputVal[9]==1)||(inputVal[10]==1)||(inputVal[11]==1)){
-        Stop();
-        delay(1000);
-        break;
-      }
-
-    }
-    
-    
-
-        
-              
-           
-           
-        // if (distance3<distance4){
-        //   turnRight(175);
-        //   delay(600);
-        //   readLineSensors();
-        //   while (inputVal[11]!=1){
-        //     readLineSensors();
-        //     forward(150,150);
-        //   }
-        //   oled.clearDisplay();
-        //   oled.setTextSize(1);      
-        //   oled.setTextColor(WHITE);
-        //   oled.setCursor(0, 10);   
-        //   oled.println("Team Spectro");
-        //   oled.setCursor(0, 30); 
-        //   oled.print("HI HOW ARE YOU");
-        //   Stop();
-        //   delay(1000);
-        //   if(inputVal[11]==1){
-        //     Stop();
-        //     turnLeft(175);
-        //     delay(600);
-                
-        //   }
-              
-        // }
-        // if (distance3>distance4){
-        //   turnLeft(175);
-        //   delay(600);
-        //   readLineSensors();
-        //   while (inputVal[0]!=0){
-        //     readLineSensors();
-        //     forward(150,150);
-        //   }
-        //   if (inputVal[0]==1){
-        //     Stop();
-        //     delay(10000);
-        //     turnRight(175);
-        //     delay(600);
-                
-        //   }
-        // }
-      
-    
-           
-
-    oled.clearDisplay();
-    oled.setTextSize(1);      
-    oled.setTextColor(WHITE);
-    oled.setCursor(0, 10);   
-    oled.println("Team Spectro");
-    oled.setCursor(0, 30);    
-    oled.print(distance3);
-    oled.print("  ");
-    oled.print(distance4);
-    oled.print("  ");
-    oled.display();
-    
-}
   HelpingStage==19;
    
 }
