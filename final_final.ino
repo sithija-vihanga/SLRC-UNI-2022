@@ -168,6 +168,9 @@ int inputVal[12] = {0,0,0,0,0,0,0,0,0,0,0,0};
   int in3 = 43;     //7
   int in4 = 41;    //6
 
+  bool redBoxPathDetected = false;
+  
+  
   //Buzzer pin
   int buzzerPin = 36; // digital pin 8
 
@@ -1280,10 +1283,12 @@ void MZmazeSolve(void)
             delay(250);
            readLineSensors();
            MZreadLFSsensors();
+           MZfloorColor = "NO COLOR CHECKING ";
            if((MZmode=='n')||(MZmode=='f'))
            {MZgoAndTurn (270);MZmotorStop();delay(200);MZsettleLine(); MZrecIntersection('L');} // or it is a "T" or "Cross"). In both cases, goes to LEFT
            
-           MZfloorColor = "NO COLOR CHECKING ";
+           
+           else{
            if (MZmode == 'c'){
               go(140,170);
               go(140,170);
@@ -1321,11 +1326,35 @@ void MZmazeSolve(void)
             
             MZmotorStop();
             delay(3000);
+            //readLinesSensors();
+          
             turnLeft(200);
             delay(500);
             Stop();
             forward(150,130);
             delay(200);
+            Stop();
+            readLineSensors();
+            while (not (lineSensorCount[0]+lineSensorCount[1]+lineSensorCount[2]>=2)){
+              reverse(150,130);
+              delay(200);
+              Stop();
+              turnRight(200);
+              delay(500);
+              Stop();
+              forward(150,130);
+              delay(200);
+              Stop();
+              readLineSensors();
+               }
+              settleLine();
+              forward(150,130);
+              delay(500);
+              Stop();
+
+              
+            
+            
             settleLine();
             for(int i =0; i<4;i++){
               pidLineFollower();
@@ -1342,22 +1371,23 @@ void MZmazeSolve(void)
             //recIntersection('B');
             
            }
-            else{
+           
+          //   else{
                              
-            MZgoAndTurn (180);
-            MZmotorStop();
-            delay(200);
-            MZsettleLine();
-            MZrecIntersection('B');
-            go(140,170);
-            go(140,170);
-            delay(1000);
-            go(140,170);
-            go(140,170);
-           }           
+          //   MZgoAndTurn (180);
+          //   MZmotorStop();
+          //   delay(200);
+          //   MZsettleLine();
+          //   MZrecIntersection('B');
+          //   go(140,170);
+          //   go(140,170);
+          //   delay(1000);
+          //   go(140,170);
+          //   go(140,170);
+          //  }           
            
            }
-         
+         }
             
          else if(MZmode== 'r'){
 
@@ -1388,13 +1418,23 @@ void MZmazeSolve(void)
             go(140,160);
             go(140,160);
             go(140,160);
-            MZgoAndTurn (270);
+
+            readLineSensors();
+            MZreadLFSsensors();
+            if ((MZmode == 'n')||(MZmode == 'f')) {MZgoAndTurn (270);MZmotorStop();delay(500);MZsettleLine(); MZrecIntersection('L');}
+            else{
+            go(130,150);
+            go(140,160);
+            go(140,160);  
+            MZrecIntersection('S');
+            }
+            
             //motorStop();
             //delay(500);
-            MZsettleLine();
+            //MZsettleLine();
             //lineFollow(); 
-            MZrecIntersection('L');
-          }   
+            //MZrecIntersection('L');
+          }
          
          else if (MZmode== 'f'){
             MZlinefollow();
@@ -2793,6 +2833,8 @@ void beepBuz(){
 
 void setup() 
 {    
+  MZpart = 1;
+  HelpingStage = 10;  
   Serial.begin(9600);           
   Gripper.attach(38); //servo gripper         
   //Initialize magnetometer 
