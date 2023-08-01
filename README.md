@@ -24,7 +24,9 @@ https://github.com/sithija-vihanga/SLRC-UNI-2022/assets/106132194/173622b4-6caf-
 The robot starts the Tower of Hanoi task by conducting a comprehensive color scanning cycle. During this phase, it carefully scans all the boxes and gathers essential information about their positions and colors. To improve color accuracy, the robot intelligently lowers its gripper during scanning, allowing the color sensor to obtain precise readings from the white boxes and the differently colored boxes.
 
 
-https://github.com/sithija-vihanga/SLRC-UNI-2022/assets/116638289/9983fc5d-2a5b-4345-bb17-1b1a5a4ba4fc
+
+https://github.com/sithija-vihanga/SLRC-UNI-2022/assets/106132194/5dcc3dd2-b924-4953-ba17-b67c1b3ec1cf
+
 
 
 
