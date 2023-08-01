@@ -41,6 +41,14 @@ Additionally, the robot is equipped with specialized line-following capabilities
 ## Color Box Detection
 With the help of the integrated color sensor, the robot showcases its ability to detect and differentiate between boxes based on their colors. During the scanning cycle, the robot skillfully lowers its gripper for improved color readings from the boxes and stores this information for further processing. Also robot consist of another color sensor at the bottom of the chasis to detect any colored boxes drawn on the arena. This capability is highly beneficial in scenarios where box color plays a critical role in decision-making or sorting tasks.
 
+## Code Naming Convention and Task Calibration
+
+In the code, we adhere to a consistent and systematic naming convention to distinguish variables and functions associated with each specific task. Each task is uniquely identified by a corresponding prefix, enabling clear differentiation within the codebase. For instance, "TH" denotes variables and functions related to the Tower of Hanoi task, "Mz" for maze solving, "AF" for arrow following, and so on. This intuitive naming approach ensures clarity and ease of identification, facilitating efficient code maintenance and development.
+
+Additionally, the variable "helpingStage" plays a pivotal role in calibrating the robot's behavior and task execution. By manipulating this variable, users can dynamically enable or disable specific tasks, thereby tailoring the robot's behavior to focus solely on the mentioned task. This dynamic control empowers experimentation and fine-tuning of the robot's performance for each task independently.
+
+The thoughtful implementation of this naming convention and the use of "helpingStage" add a layer of flexibility and efficiency to the robot's codebase. It facilitates seamless task isolation, allowing developers to observe the robot's prowess in Tower of Hanoi, maze solving, arrow following, or any other specific task with ease. This adaptable approach ensures a versatile and rewarding robotics experience, encouraging exploration and experimentation with the robot's multifunctional capabilities.
+
 ## Usage Instructions
 To explore the multifunctional capabilities of our robot, follow the comprehensive setup instructions provided in this repository's documentation. Assemble the hardware components, upload the meticulously crafted Arduino code to the board, and connect the sensors appropriately. Once the robot is ready, it can autonomously perform tasks such as Tower of Hanoi, arrow following, wall following, line following, and color box detection, depending on the task selected.
 
