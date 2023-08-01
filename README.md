@@ -11,9 +11,22 @@ The robot's hardware setup comprises the reliable Arduino Mega board, chosen for
 The incorporation of a color sensor is instrumental in achieving precise color box detection, crucial for tasks involving distinguishing different boxes based on their colors. The combination of these hardware components empowers the robot to accomplish its multifunctional objectives with finesse.
 
 ## Tower of Hanoi Algorithm
-Our robot exhibits remarkable problem-solving abilities, skillfully tackling the classic Tower of Hanoi puzzle. The algorithm begins with a comprehensive color scanning cycle, where the robot gathers essential information about box positions and colors. Once the scanning is complete, the robot strategically moves the largest box to the first white box, based on user input from a dip switch.
+Our robot exhibits remarkable problem-solving abilities, skillfully tackling the classic Tower of Hanoi puzzle. The objective of this task is to move three boxes of different sizes between three white boxes, ultimately building a tower in a designated white box and then transferring it to another specified white box during the start of the competition.
 
-Adhering to the precise rules of the Tower of Hanoi puzzle, the robot orchestrates the movement of the remaining boxes with utmost precision, never placing a larger box on top of a smaller one. The advanced IR sensors and magnetometer enable the robot to navigate efficiently, ensuring an optimal solution to the Tower of Hanoi problem.
+### Color Scanning and Box Detection
+The robot starts the Tower of Hanoi task by conducting a comprehensive color scanning cycle. During this phase, it carefully scans all the boxes and gathers essential information about their positions and colors. To improve color accuracy, the robot intelligently lowers its gripper during scanning, allowing the color sensor to obtain precise readings from the white boxes and the differently colored boxes.
+
+### Initial Tower Construction
+Once the scanning is complete, the robot begins constructing the tower in the designated white box. Based on user input from a dip switch, the robot identifies the largest box and moves it to the first white box. The advanced IR sensors play a crucial role in this process, ensuring precise box grabbing and placement.
+
+### Solving the Tower of Hanoi
+Adhering to the precise rules of the Tower of Hanoi puzzle, the robot proceeds with the movement of the remaining boxes. It ensures that a larger box is never placed on top of a smaller one, guaranteeing a valid solution. The robot's navigation capabilities, powered by IR sensors and the magnetometer, enable it to move efficiently and achieve the optimal solution to the Tower of Hanoi problem.
+
+### Final Tower Placement
+After successfully constructing the tower in the designated white box, the robot proceeds to transfer the tower to the specified destination white box, completing the competition task. The precise movements, combined with the color sensor's accuracy in detecting box colors, ensure a smooth and error-free transfer of the tower.
+
+The Tower of Hanoi task demonstrates the robot's prowess in problem-solving, navigation, and color detection. Its ability to tackle this classic puzzle showcases the integration of advanced hardware components and a well-crafted algorithm. The multifunctional robot proves its versatility and intelligence, making it a fascinating project for robotics enthusiasts and problem-solving enthusiasts alike.
+
 
 ## Arrow Following Task
 The robot's navigation capabilities are put to the test in the arrow-following task. Placed in an elevated black arena adorned with white arrows, the robot must successfully follow the arrows and reach the finishing line. To achieve this, the robot utilizes 11 IR sensors positioned strategically to identify and interpret the arrow directions.
