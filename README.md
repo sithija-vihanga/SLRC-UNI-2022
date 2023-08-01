@@ -32,13 +32,15 @@ The Tower of Hanoi task demonstrates the robot's prowess in problem-solving, nav
 
 ## Maze Solving
 
-![1](https://github.com/sithija-vihanga/SLRC-UNI-2022/assets/105491340/53b8b84f-ecc0-4832-a54d-474d614d3acd)
+
 
 We employed a straight-line following algorithm to navigate through the maze. The journey began at the white square, and we followed a curved path until we reached the green box, which served as the starting point for the maze-solving process. Utilizing the IR sensor panel, we detected the path's lines, and a color sensor at the bottom helped us identify the colors of the squares.
 
 To successfully solve the maze, we implemented the "Always Left" method. When the robot entered the red square, it signaled the completion of the maze-solving process, and the robot exited the line maze.
 
 The straight-line following algorithm, along with our precise sensor setup, allowed us to effectively and efficiently navigate the maze and reach the desired endpoint.
+
+![1](https://github.com/sithija-vihanga/SLRC-UNI-2022/assets/105491340/53b8b84f-ecc0-4832-a54d-474d614d3acd)
 
 ## Arrow Following Task
 In the arrow-following task, our robot entered an elevated black arena with white arrows on the floor. The arena was designed with several arrow paths, except for the required arrow path, to challenge the robot's navigation skills. The objective was to follow the white arrows and reach the finishing line. To accomplish this, we equipped the robot with 12 IR sensors to identify the arrows accurately.
