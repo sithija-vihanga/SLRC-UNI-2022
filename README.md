@@ -19,6 +19,12 @@ Our robot exhibits remarkable problem-solving abilities, skillfully tackling the
 ### Color Scanning and Box Detection
 The robot starts the Tower of Hanoi task by conducting a comprehensive color scanning cycle. During this phase, it carefully scans all the boxes and gathers essential information about their positions and colors. To improve color accuracy, the robot intelligently lowers its gripper during scanning, allowing the color sensor to obtain precise readings from the white boxes and the differently colored boxes.
 
+
+https://github.com/sithija-vihanga/SLRC-UNI-2022/assets/116638289/9983fc5d-2a5b-4345-bb17-1b1a5a4ba4fc
+
+
+
+
 ### Initial Tower Construction
 Once the scanning is complete, the robot begins constructing the tower in the designated white box. Based on user input from a dip switch, the robot identifies the largest box and moves it to the first white box. The advanced IR sensors play a crucial role in this process, ensuring precise box grabbing and placement.
 
@@ -55,6 +61,12 @@ For successful navigation, we implemented a modified PID control algorithm, allo
 
 ## Wall Following and Line Following
 In the wall-following task, the robot demonstrates its ability to autonomously follow the walls of a defined path. The 12 IR sensors are instrumental in detecting the walls and precisely navigating along them. Utilizing this skill, the robot can confidently explore its environment while maintaining a constant distance from the walls.
+
+
+
+https://github.com/sithija-vihanga/SLRC-UNI-2022/assets/116638289/c73756eb-3d42-4c15-a8ae-b545ab122ab5
+
+
 
 Additionally, the robot is equipped with specialized line-following capabilities. Through IR sensors, the robot accurately tracks lines on the floor, adhering to their paths with precision. This skill proves valuable in various applications, from industrial automation to tracking lines on complex surfaces.
 
