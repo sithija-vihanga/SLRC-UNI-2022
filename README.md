@@ -20,7 +20,10 @@ Our robot exhibits remarkable problem-solving abilities, skillfully tackling the
 
 
 
-Uploading WhatsApp Video 2023-08-01 at 21.35.33.mp4…
+
+
+https://github.com/sithija-vihanga/SLRC-UNI-2022/assets/106132194/8bba1cbf-840b-46bf-b60e-d2af507dd63b
+
 
 
 
