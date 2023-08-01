@@ -27,7 +27,11 @@ The robot starts the Tower of Hanoi task by conducting a comprehensive color sca
 
 
 
-https://github.com/sithija-vihanga/SLRC-UNI-2022/assets/106132194/5dcc3dd2-b924-4953-ba17-b67c1b3ec1cf
+
+
+
+https://github.com/sithija-vihanga/SLRC-UNI-2022/assets/116638289/d22c4521-5478-428e-9b4c-7e2ef48e657c
+
 
 
 
