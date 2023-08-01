@@ -68,10 +68,7 @@ In the wall-following task, the robot demonstrates its ability to autonomously f
 
 
 
-
-https://github.com/sithija-vihanga/SLRC-UNI-2022/assets/116638289/267cdcae-cf84-4e64-8b82-2a0f10154deb
-
-
+https://github.com/sithija-vihanga/SLRC-UNI-2022/assets/116638289/ba1bb9d2-e48a-47fd-b685-367a5ff082ed
 
 
 Additionally, the robot is equipped with specialized line-following capabilities. Through IR sensors, the robot accurately tracks lines on the floor, adhering to their paths with precision. This skill proves valuable in various applications, from industrial automation to tracking lines on complex surfaces.
