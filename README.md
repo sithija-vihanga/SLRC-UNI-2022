@@ -1,6 +1,9 @@
 # Multifunctional Robot with Arduino Mega, IR Sensors, and Color Detection
 
-![Robot Demo](images/robot_demo.gif)
+
+![WhatsApp Image 2023-08-01 at 19 12 14](https://github.com/sithija-vihanga/SLRC-UNI-2022/assets/116638289/5a4e00c6-e4b7-4f49-90b9-ac102e81726d)
+
+![WhatsApp Image 2023-08-01 at 19 14 09](https://github.com/sithija-vihanga/SLRC-UNI-2022/assets/116638289/4f7ec073-a41b-4551-afa8-c77ebfe19760)
 
 ## Overview
 Welcome to the repository of our multifunctional robot, a versatile project developed using Arduino Mega board and an array of sensors. This robot is designed to excel in various tasks, including solving the classic Tower of Hanoi problem, expertly following arrows, skillfully navigating along walls, precisely tracking lines, and detecting colors of different boxes. The robot's capabilities showcase the power of Arduino Mega, IR sensors, magnetometer, and a color sensor, enabling it to tackle a wide range of challenges.
