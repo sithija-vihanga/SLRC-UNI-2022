@@ -3,7 +3,6 @@ In the arrow-following task, our robot entered an elevated black arena with whit
 
 <figure style="float: left; width: 200px;">
   <img src="https://github.com/sithija-vihanga/SLRC-UNI-2022/assets/106132194/49de2ae8-6a63-41a3-a495-515373c086aa" alt="Arrow Following Arena">
-  <figcaption style="color: blue; font-size: 12px; text-align: center;">Arrow Following Arena</figcaption>
 </figure>
 
 
