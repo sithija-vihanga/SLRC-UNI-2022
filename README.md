@@ -1,10 +1,5 @@
 # Multifunctional Robot with Arduino Mega, IR Sensors, and Color Detection
 
-
-![WhatsApp Image 2023-08-01 at 19 12 14](https://github.com/sithija-vihanga/SLRC-UNI-2022/assets/116638289/5a4e00c6-e4b7-4f49-90b9-ac102e81726d)
-
-![WhatsApp Image 2023-08-01 at 19 14 09](https://github.com/sithija-vihanga/SLRC-UNI-2022/assets/116638289/4f7ec073-a41b-4551-afa8-c77ebfe19760)
-
 ## Overview
 Welcome to the repository of our multifunctional robot, a versatile project developed using Arduino Mega board and an array of sensors. This robot is designed to excel in various tasks, including solving the classic Tower of Hanoi problem, expertly following arrows, skillfully navigating along walls, precisely tracking lines, and detecting colors of different boxes. The robot's capabilities showcase the power of Arduino Mega, IR sensors, magnetometer, and a color sensor, enabling it to tackle a wide range of challenges.
 
@@ -40,7 +35,6 @@ To successfully solve the maze, we implemented the "Always Left" method. When th
 
 The straight-line following algorithm, along with our precise sensor setup, allowed us to effectively and efficiently navigate the maze and reach the desired endpoint.
 
-![1](https://github.com/sithija-vihanga/SLRC-UNI-2022/assets/105491340/53b8b84f-ecc0-4832-a54d-474d614d3acd)
 
 ## Arrow Following Task
 In the arrow-following task, our robot entered an elevated black arena with white arrows on the floor. The arena was designed with several arrow paths, except for the required arrow path, to challenge the robot's navigation skills. The objective was to follow the white arrows and reach the finishing line. To accomplish this, we equipped the robot with 12 IR sensors to identify the arrows accurately.
