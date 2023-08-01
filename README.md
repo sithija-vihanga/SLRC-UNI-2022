@@ -31,6 +31,9 @@ After successfully constructing the tower in the designated white box, the robot
 The Tower of Hanoi task demonstrates the robot's prowess in problem-solving, navigation, and color detection. Its ability to tackle this classic puzzle showcases the integration of advanced hardware components and a well-crafted algorithm. The multifunctional robot proves its versatility and intelligence, making it a fascinating project for robotics enthusiasts and problem-solving enthusiasts alike.
 
 ## Maze Solving
+
+![1](https://github.com/sithija-vihanga/SLRC-UNI-2022/assets/105491340/53b8b84f-ecc0-4832-a54d-474d614d3acd)
+
 We employed a straight-line following algorithm to navigate through the maze. The journey began at the white square, and we followed a curved path until we reached the green box, which served as the starting point for the maze-solving process. Utilizing the IR sensor panel, we detected the path's lines, and a color sensor at the bottom helped us identify the colors of the squares.
 
 To successfully solve the maze, we implemented the "Always Left" method. When the robot entered the red square, it signaled the completion of the maze-solving process, and the robot exited the line maze.
