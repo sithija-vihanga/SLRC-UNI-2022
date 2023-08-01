@@ -19,7 +19,9 @@ Our robot exhibits remarkable problem-solving abilities, skillfully tackling the
 
 
 
-https://github.com/sithija-vihanga/SLRC-UNI-2022/assets/106132194/058a4a7a-dce0-41b8-93f2-872f65c0d0a0
+
+Uploading WhatsApp Video 2023-08-01 at 21.35.33.mp4…
+
 
 
 ### Color Scanning and Box Detection
