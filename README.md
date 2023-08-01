@@ -1,12 +1,6 @@
 # Multifunctional Robot with Arduino Mega, IR Sensors, and Color Detection
-<div style="display: flex; flex-direction: row;">
-  <div style="flex: 1;">
-    <img src="https://github.com/sithija-vihanga/SLRC-UNI-2022/assets/106132194/268a2065-6e54-4442-b7e9-5ce4e8a4b1ea" alt="Robot 2" style="width: 100%;">
-  </div>
-  <div style="flex: 1;">
-    <img src="https://github.com/sithija-vihanga/SLRC-UNI-2022/assets/106132194/78efc6fd-752b-4dd8-827c-03334113d0c2" alt="Robot 1" style="width: 100%;">
-  </div>
-</div>
+![Robot 2](https://github.com/sithija-vihanga/SLRC-UNI-2022/assets/106132194/268a2065-6e54-4442-b7e9-5ce4e8a4b1ea) ![Robot 1](https://github.com/sithija-vihanga/SLRC-UNI-2022/assets/106132194/78efc6fd-752b-4dd8-827c-03334113d0c2)
+
 
 
 ## Overview
