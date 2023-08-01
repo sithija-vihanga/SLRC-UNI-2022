@@ -2,7 +2,8 @@
 In the arrow-following task, our robot entered an elevated black arena with white arrows on the floor. The arena was designed with several arrow paths, except for the required arrow path, to challenge the robot's navigation skills. The objective was to follow the white arrows and reach the finishing line. To accomplish this, we equipped the robot with 12 IR sensors to identify the arrows accurately.
 
 <figure style="float: left; width: 200px;">
-  <img src="https://github.com/sithija-vihanga/SLRC-UNI-2022/assets/106132194/49de2ae8-6a63-41a3-a495-515373c086aa" alt="Arrow Following Arena">
+  <img src="https://github.com/sithija-vihanga/SLRC-UNI-2022/assets/106132194/49de2ae8-6a63-41a3-a495-515373c086aa" alt="Arrow Following Arena" style="width: 100%;">
+  <figcaption style="color: blue; font-size: 12px; text-align: center;">Arrow Following Arena</figcaption>
 </figure>
 
 
