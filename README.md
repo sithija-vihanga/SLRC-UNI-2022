@@ -34,7 +34,9 @@ We employed a straight-line following algorithm to navigate through the maze. Th
 To successfully solve the maze, we implemented the "Always Left" method. When the robot entered the red square, it signaled the completion of the maze-solving process, and the robot exited the line maze.
 
 The straight-line following algorithm, along with our precise sensor setup, allowed us to effectively and efficiently navigate the maze and reach the desired endpoint.
+
 ![1](https://github.com/sithija-vihanga/SLRC-UNI-2022/assets/105491340/4b4b8492-ca1d-4b90-9d61-6eac154a4935)
+
 
 ## Arrow Following Task
 In the arrow-following task, our robot entered an elevated black arena with white arrows on the floor. The arena was designed with several arrow paths, except for the required arrow path, to challenge the robot's navigation skills. The objective was to follow the white arrows and reach the finishing line. To accomplish this, we equipped the robot with 12 IR sensors to identify the arrows accurately.
