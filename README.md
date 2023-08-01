@@ -29,9 +29,9 @@ The Tower of Hanoi task demonstrates the robot's prowess in problem-solving, nav
 
 
 ## Arrow Following Task
-The robot's navigation capabilities are put to the test in the arrow-following task. Placed in an elevated black arena adorned with white arrows, the robot must successfully follow the arrows and reach the finishing line. To achieve this, the robot utilizes 11 IR sensors positioned strategically to identify and interpret the arrow directions.
+In the arrow-following task, our robot entered an elevated black arena with white arrows on the floor. The arena was designed with several arrow paths, except for the required arrow path, to challenge the robot's navigation skills. The objective was to follow the white arrows and reach the finishing line. To accomplish this, we equipped the robot with 12 IR sensors to identify the arrows accurately.
 
-A modified PID control algorithm facilitates precise movements along the designated arrow paths. The robot expertly employs a combination of forward and reverse motions to align its orientation with the arrows, skillfully navigating through the challenging arena. Smooth transitions into and out of the challenge area are ensured by incorporating ramps and line-following segments at the arena's entrance and exit.
+For successful navigation, we implemented a modified PID control algorithm, allowing the robot to make precise movements along the designated arrow paths. Additionally, we utilized a combination of reverse and forward motions to adjust the robot's orientation and alignment with the arrows. The arena's entrance and exit were designed as ramps with line-following segments, ensuring a smooth transition for the robot into and out of the challenge area.
 
 ## Wall Following and Line Following
 In the wall-following task, the robot demonstrates its ability to autonomously follow the walls of a defined path. The 12 IR sensors are instrumental in detecting the walls and precisely navigating along them. Utilizing this skill, the robot can confidently explore its environment while maintaining a constant distance from the walls.
