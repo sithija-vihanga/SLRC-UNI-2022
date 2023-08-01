@@ -67,4 +67,4 @@ As an open-source project, we invite contributions from the community. If you ha
 
 Join us in exploring the possibilities of robotics and problem-solving! Let's collaborate to build innovative, multifunctional robots. Happy exploring and robot-building! 🤖💡
 
-(Note: The above description highlights the multifunctional aspects of the robot, covering Tower of Hanoi, arrow following, wall following, line following, and color box detection. You can further refine and expand each task's description as needed in separate sections of the README.)
+
