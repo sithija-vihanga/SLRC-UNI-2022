@@ -10,6 +10,7 @@ QMC5883LCompass compass;
 #define NUM_VALUES 6   //for floor pattern
 
 
+
 // declare an SSD1306 display object connected to I2C
 Adafruit_SSD1306 oled(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, -1);
 
