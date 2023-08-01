@@ -64,7 +64,9 @@ In the wall-following task, the robot demonstrates its ability to autonomously f
 
 
 
-https://github.com/sithija-vihanga/SLRC-UNI-2022/assets/116638289/c73756eb-3d42-4c15-a8ae-b545ab122ab5
+
+https://github.com/sithija-vihanga/SLRC-UNI-2022/assets/116638289/267cdcae-cf84-4e64-8b82-2a0f10154deb
+
 
 
 
