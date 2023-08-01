@@ -39,8 +39,9 @@ The straight-line following algorithm, along with our precise sensor setup, allo
 ## Arrow Following Task
 In the arrow-following task, our robot entered an elevated black arena with white arrows on the floor. The arena was designed with several arrow paths, except for the required arrow path, to challenge the robot's navigation skills. The objective was to follow the white arrows and reach the finishing line. To accomplish this, we equipped the robot with 12 IR sensors to identify the arrows accurately.
 
-For![Arrow Following Arena](https://github.com/sithija-vihanga/SLRC-UNI-2022/assets/106132194/bed728b2-5e45-4abc-8581-8d558bc04464)
- successful navigation, we implemented a modified PID control algorithm, allowing the robot to make precise movements along the designated arrow paths. Additionally, we utilized a combination of reverse and forward motions to adjust the robot's orientation and alignment with the arrows. The arena's entrance and exit were designed as ramps with line-following segments, ensuring a smooth transition for the robot into and out of the challenge area.
+![Arrow Following Arena](https://github.com/sithija-vihanga/SLRC-UNI-2022/assets/106132194/bed728b2-5e45-4abc-8581-8d558bc04464)
+
+For successful navigation, we implemented a modified PID control algorithm, allowing the robot to make precise movements along the designated arrow paths. Additionally, we utilized a combination of reverse and forward motions to adjust the robot's orientation and alignment with the arrows. The arena's entrance and exit were designed as ramps with line-following segments, ensuring a smooth transition for the robot into and out of the challenge area.
 
 ## Wall Following and Line Following
 In the wall-following task, the robot demonstrates its ability to autonomously follow the walls of a defined path. The 12 IR sensors are instrumental in detecting the walls and precisely navigating along them. Utilizing this skill, the robot can confidently explore its environment while maintaining a constant distance from the walls.
