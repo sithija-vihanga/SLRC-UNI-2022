@@ -16,6 +16,10 @@ The incorporation of a color sensor is instrumental in achieving precise color b
 ## Tower of Hanoi Algorithm
 Our robot exhibits remarkable problem-solving abilities, skillfully tackling the classic Tower of Hanoi puzzle. The objective of this task is to move three boxes of different sizes between three white boxes, ultimately building a tower in a designated white box and then transferring it to another specified white box during the start of the competition.
 
+
+https://github.com/sithija-vihanga/SLRC-UNI-2022/assets/106132194/173622b4-6caf-468d-b6c9-f4448bf9210b
+
+
 ### Color Scanning and Box Detection
 The robot starts the Tower of Hanoi task by conducting a comprehensive color scanning cycle. During this phase, it carefully scans all the boxes and gathers essential information about their positions and colors. To improve color accuracy, the robot intelligently lowers its gripper during scanning, allowing the color sensor to obtain precise readings from the white boxes and the differently colored boxes.
 
