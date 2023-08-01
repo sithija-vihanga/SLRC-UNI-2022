@@ -6,7 +6,7 @@
 Welcome to the repository of our multifunctional robot, a versatile project developed using Arduino Mega board and an array of sensors. This robot is designed to excel in various tasks, including solving the classic Tower of Hanoi problem, expertly following arrows, skillfully navigating along walls, precisely tracking lines, and detecting colors of different boxes. The robot's capabilities showcase the power of Arduino Mega, IR sensors, magnetometer, and a color sensor, enabling it to tackle a wide range of challenges.
 
 ## Hardware Components
-The robot's hardware setup comprises the reliable Arduino Mega board, chosen for its computational power and versatility. To excel in its diverse tasks, the robot is equipped with 12 IR sensors, enabling accurate box position detection, obstacle avoidance, and wall following. Additionally, a magnetometer is utilized to continuously update the robot's orientation and direction during navigation.
+The robot's hardware setup comprises the reliable Arduino Mega board, chosen for its computational power and versatility. To excel in its diverse tasks, the robot is equipped with 12 IR sensors, enabling accurate line detection and 2 color sensors are placed for box  detection and 7 ultrasonic sensors are used for obstacle avoidance, and wall following. Additionally, a magnetometer is utilized to continuously update the robot's orientation and direction during navigation.
 
 The incorporation of a color sensor is instrumental in achieving precise color box detection, crucial for tasks involving distinguishing different boxes based on their colors. The combination of these hardware components empowers the robot to accomplish its multifunctional objectives with finesse.
 
