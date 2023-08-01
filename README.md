@@ -90,8 +90,6 @@ As an open-source project, we invite contributions from the community. If you ha
 Join us in exploring the possibilities of robotics and problem-solving! Let's collaborate to build innovative, multifunctional robots. Happy exploring and robot-building! 🤖💡
 
 ## Our Team
-| ![Robot 2](https://github.com/sithija-vihanga/SLRC-UNI-2022/assets/106132194/055187e3-519a-4ac3-a43c-b6e46fa5298b) | ![Robot 1]() |
-|:---:|:---:|
-
+![Robot 2](https://github.com/sithija-vihanga/SLRC-UNI-2022/assets/106132194/055187e3-519a-4ac3-a43c-b6e46fa5298b)
 
 
